@@ -1,17 +1,10 @@
-<!DOCTYPE html>
-<html>
-<head>
-
-	<title>Distillery</title>
-	<meta charset="utf-8" />
+{% include "html/header.jinja2" %}
 	<script src="https://cdn.jsdelivr.net/npm/vega@5.20.2"></script>
 	<script src="https://cdn.jsdelivr.net/npm/vega-lite@5.1.0"></script>
 	<script src="https://cdn.jsdelivr.net/npm/vega-embed@6.18.2"></script>
-	<script>vegaData={values:[a: 'C', b: 2, a:'C', b:7]}</script>
-
 </head>
 <body>
-
+<h1>Distillery View</h1>
 
 <textarea id="vegatextarea" rows="30" cols="80" placeholder="vega-lite" onclick="eval('spec='+this.value+';vegaEmbed(\'#vis\', spec, {\'actions\':false})')" autofocus>
 {

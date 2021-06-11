@@ -10,21 +10,11 @@ import aioredis
 import jinja2
 import ujson
 
+import home
 import connection
 import query
-
-
-@aiohttp_jinja2.template('html/index.jinja2')
-async def index(request):
-	return {'hello': 'template'}
-
-@aiohttp_jinja2.template('html/view.jinja2')
-async def view(request):
-	return {'hello': 'template'}
-
-@aiohttp_jinja2.template('html/dashboard.jinja2')
-async def dashboard(request):
-	return {'hello': 'template'}
+import view
+import dashboard
 
 
 async def app_factory(argv=[]):
@@ -34,13 +24,13 @@ async def app_factory(argv=[]):
 	logging.info(f'Python version: {sys.version}')
 	aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('./templates'))
 	app.add_routes([
-		web.get('/', index),
+		web.get('/', home.home),
 		web.get('/connection', connection.connection),
 		web.post('/connection', connection.connection),
 		web.get('/query', query.query),
 		web.post('/query', query.query),
-		web.get('/view', view),
-		web.get('/dashboard', dashboard),
+		web.get('/view', view.view),
+		web.get('/dashboard', dashboard.dashboard),
 		web.static('/css/', './static/css/', show_index=False),
 	])
 	with open('/secrets/distillery.json', 'r') as fin:
@@ -52,7 +42,7 @@ async def app_factory(argv=[]):
 		password=pg_config['password'],
 		database=pg_config['database'],
 		host=pg_config['host'],
-		command_timeout=60)
+		command_timeout=10)
 	app['pg_pool'] = pg_pool
 	# Redis Pool:
 	redis_host = app['config']['redis']['host']
