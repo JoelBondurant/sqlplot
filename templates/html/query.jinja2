@@ -1,0 +1,33 @@
+{% include "html/header.jinja2" %}
+</head>
+<body>
+
+<h1>Distillery Query</h1>
+
+<form name="new" action="query" method="post">
+<ul>
+	<li class="formrow">
+		<label for="xconnection_id">xconnection_id:</label>
+		<select id="xconnection_id" name="xconnection_id">
+			{% for xconnection_label in xconnection_labels: %}
+			<option value="{{ xconnection_label[0] }}">{{ xconnection_label[1] }}</option>
+			{% endfor %}
+		</select>
+	</li>
+	<li class="formrow">
+		<label for="query_text">query_text:</label>
+		<input id="query_text" type="textarea" name="query_text" value="" required/>
+	</li>
+</ul>
+<br/>
+<input type="submit" value="+">
+</form>
+
+
+{% for query in queries: %}
+	{{ query }} <br/>
+{% endfor %}
+
+
+</body>
+</html>

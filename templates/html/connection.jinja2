@@ -1,0 +1,52 @@
+{% include "html/header.jinja2" %}
+</head>
+<body>
+
+<h1>Distillery Connection</h1>
+
+<form name="new" action="connection" method="post">
+<ul>
+	<li class="formrow">
+		<label for="name">Name:</label>
+		<input id="name" type="text" name="name" value="" required/>
+	</li>
+	<li class="formrow">
+		<label for="type">Type:</label>
+		<select id="type" name="type">
+			<option value="PostgreSQL">PostgreSQL</option>
+			<option value="MySQL">MySQL</option>
+		</select>
+	</li>
+	<li class="formrow">
+		<label for="host">Host:</label>
+		<input id="host" type="text" name="host" value="" required/>
+	</li>
+	<li class="formrow">
+		<label for="port">Port:</label>
+		<input id="port" type="number" name="port" min=0 step=1/>
+	</li>
+	<li class="formrow">
+		<label for="database">Database:</label>
+		<input id="database" type="text" name="database" value=""/>
+	</li>
+	<li class="formrow">
+		<label for="user">User:</label>
+		<input id="user" type="text" name="user" value="" required/>
+	</li>
+	<li class="formrow">
+		<label for="password">Password:</label>
+		<input id="password" type="password" name="password" value="" required/>
+	</li>
+</ul>
+<br/>
+<input type="submit" value="+">
+</form>
+
+
+{% for connection in connections: %}
+	{{ connection }} <br/>
+{% endfor %}
+
+
+</body>
+</html>
