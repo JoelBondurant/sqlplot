@@ -49,11 +49,12 @@ async def query(request):
 				raise aiohttp.web.HTTPFound('/query')
 		logging.debug(f'Fetching queries...')
 		queries = await pgconn.fetch(f'select {", ".join(columns)} from query', timeout=4)
+		queries = [dict(x) for x in queries]
 		logging.debug(f'Fetching connections...')
 		cdata = await pgconn.fetch(f'select xconnection_id, name from connection', timeout=4)
 		logging.debug(f'Finishing query response.')
 		xconnection_ids = XCONNECTION_IDS.copy() + [x[0] for x in cdata]
-		xconnection_names = XCONNECTION_IDS.copy() + [x[1] + '-' + x[0] for x in cdata]
+		xconnection_names = XCONNECTION_IDS.copy() + [x[1] + '-' + x[0][:4] for x in cdata]
 		xconnection_labels = [*zip(xconnection_ids, xconnection_names)]
 		return {
 			'queries': queries,

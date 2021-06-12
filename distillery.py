@@ -32,6 +32,7 @@ async def app_factory(argv=[]):
 		web.get('/view', view.view),
 		web.get('/dashboard', dashboard.dashboard),
 		web.static('/css/', './static/css/', show_index=False),
+		web.static('/data', '/data/distillery/query/', show_index=True),
 	])
 	with open('/secrets/distillery.json', 'r') as fin:
 		app['config'] = ujson.load(fin)

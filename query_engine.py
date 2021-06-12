@@ -5,6 +5,7 @@ import logging
 import sys
 
 import aiofiles
+import aiofiles.os
 import aiohttp
 import aioredis
 import asyncpg
@@ -17,6 +18,8 @@ app = {}
 async def process_event(event):
 	if event['event_type'] == 'new':
 		xquery_id = event['xquery_id']
+		fn_hidden = f'/data/distillery/query/.{xquery_id}.csv'
+		fn = f'/data/distillery/query/{xquery_id}.csv'
 		async with (app['pg_pool']).acquire(timeout=2) as pgconn:
 			query_info_sql = 'select * from query where xquery_id = $1'
 			query_info = dict(await pgconn.fetchrow(query_info_sql, xquery_id))
@@ -28,10 +31,11 @@ async def process_event(event):
 					async with aiohttp.ClientSession() as session:
 						async with session.get(query_text) as resp:
 							data = await resp.content.read()
-					fn = f'/data/distillery/query/{xquery_id}.csv'
-					async with aiofiles.open(fn, 'w') as fh:
+					async with aiofiles.open(fn_hidden, 'w') as fh:
 						await fh.write(data.decode())
-					logging.info(fn)
+					await aiofiles.os.remove(fn)
+					await aiofiles.os.rename(fn_hidden, fn)
+					logging.info(f'Ready: {fn}')
 
 
 async def channel_reader(channel):
