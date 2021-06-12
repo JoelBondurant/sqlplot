@@ -25,7 +25,7 @@ def set_form_defaults(form):
 	return form
 
 
-@aiohttp_jinja2.template('html/query.jinja2')
+@aiohttp_jinja2.template('html/query.html')
 async def query(request):
 	logging.debug(f'Starting query response.')
 	redis = request.app['redis']

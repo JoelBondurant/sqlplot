@@ -21,7 +21,7 @@ def set_form_defaults(form):
 	return form
 
 
-@aiohttp_jinja2.template('html/view.jinja2')
+@aiohttp_jinja2.template('html/view.html')
 async def view(request):
 	return {}
 
