@@ -3,6 +3,7 @@
 import logging
 import sys
 
+import aiofiles
 from aiohttp import web
 import aiohttp_jinja2
 import asyncpg
@@ -34,8 +35,8 @@ async def app_factory(argv=[]):
 		web.static('/css/', './static/css/', show_index=False),
 		web.static('/data', '/data/distillery/query/', show_index=True),
 	])
-	with open('/secrets/distillery.json', 'r') as fin:
-		app['config'] = ujson.load(fin)
+	async with aiofiles.open('/secrets/distillery.json', 'r') as fin:
+		app['config'] = ujson.loads(await fin.read())
 	# PostgreSQL Pool:
 	pg_config = app['config']['postgres']
 	pg_pool = await asyncpg.create_pool(
@@ -47,8 +48,7 @@ async def app_factory(argv=[]):
 	app['pg_pool'] = pg_pool
 	# Redis Pool:
 	redis_host = app['config']['redis']['host']
-	redis_pool = await aioredis.create_redis_pool(f'redis://{redis_host}')
-	app['redis'] = redis_pool
+	app['redis'] = await aioredis.create_connection(f'redis://{redis_host}')
 	return app
 
 
