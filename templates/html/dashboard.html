@@ -1,14 +1,49 @@
-<!DOCTYPE html>
-<html>
-<head>
-
-	<title>Distillery</title>
-	<meta charset="utf-8" />
+{% include "html/header.html" %}
+	<script src="https://cdn.jsdelivr.net/npm/d3@7.0.0"></script>
+	<script src="https://cdn.jsdelivr.net/npm/vega@5.20.2"></script>
+	<script src="https://cdn.jsdelivr.net/npm/vega-lite@5.1.0"></script>
+	<script src="https://cdn.jsdelivr.net/npm/vega-embed@6.18.2"></script>
+	<script src="https://cdn.jsdelivr.net/npm/datalib@1.9.3"></script>
+	<link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.0/min/vs/editor/editor.main.css">
+<style>
+#main {
+	display: flex;
+}
+#main div {
+	flex-grow: 0;
+	flex-shrink: 0;
+	flex-basis: 400px;
+}
+</style>
 
 </head>
 <body>
+<h2>Distillery Dashboard</h2>
 
-Distillery Ad
+<div id="main">
+<div id="container" style="width: 800px; height: 600px; border: 1px solid grey" autofocus>
+</div>
 
+<div id="vis"></div>
+</div>
+
+<script>
+	var require = {"paths":{"vs":"https://cdn.jsdelivr.net/npm/monaco-editor@0.25.0/min/vs/"}};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.0/min/vs/loader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.0/min/vs/editor/editor.main.nls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.0/min/vs/editor/editor.main.js"></script>
+<script>
+	window.editor = monaco.editor.create(document.getElementById('container'), {
+		value: '',
+		language: 'json',
+		scrollbar: {
+			vertical: 'auto',
+			horizontal: 'auto'
+		},
+		theme: 'vs-dark',
+		automaticLayout: true,
+	});
+</script>
 </body>
 </html>

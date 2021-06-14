@@ -1,4 +1,5 @@
 {% include "html/header.html" %}
+	<script src="https://cdn.jsdelivr.net/npm/d3@7.0.0"></script>
 	<script src="https://cdn.jsdelivr.net/npm/vega@5.20.2"></script>
 	<script src="https://cdn.jsdelivr.net/npm/vega-lite@5.1.0"></script>
 	<script src="https://cdn.jsdelivr.net/npm/vega-embed@6.18.2"></script>
@@ -21,7 +22,11 @@
 
 <div id="main">
 <div id="container" style="width: 800px; height: 600px; border: 1px solid grey"
-onclick="eval('spec='+window.editor.getValue()+';vegaEmbed(\'#vis\', spec, {\'actions\':false})')"
+onclick="
+var spec = window.editor.getValue();
+document.getElementById('configuration').value = spec;
+eval('spec='+spec+';vegaEmbed(\'#vis\', spec, {actions:false, theme: \'dark\'})')
+"
  autofocus>
 </div>
 
@@ -46,5 +51,28 @@ onclick="eval('spec='+window.editor.getValue()+';vegaEmbed(\'#vis\', spec, {\'ac
 		automaticLayout: true,
 	});
 </script>
+
+
+<form name="new" action="view" method="post">
+<ul>
+	<li class="formrow">
+		<label for="name">name:</label>
+		<input id="name" type="text" name="name" value="" required/>
+	</li>
+	<input type="hidden" id="configuration" name="configuration" value="">
+</ul>
+<br/>
+<input type="submit" value="+">
+</form>
+
+
+{% for view in views: %}
+	{{ view }} <br/>
+{% endfor %}
+
+
+
+
+
 </body>
 </html>

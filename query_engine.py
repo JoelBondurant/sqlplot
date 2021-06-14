@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+import os
 import sys
 
 import aiofiles
@@ -18,24 +19,25 @@ app = {}
 async def process_event(event):
 	if event['event_type'] == 'new':
 		xquery_id = event['xquery_id']
-		fn_hidden = f'/data/distillery/query/.{xquery_id}.csv'
-		fn = f'/data/distillery/query/{xquery_id}.csv'
 		async with (app['pg_pool']).acquire(timeout=2) as pgconn:
 			query_info_sql = 'select * from query where xquery_id = $1'
 			query_info = dict(await pgconn.fetchrow(query_info_sql, xquery_id))
 			logging.debug(f'query_info: {query_info}')
 			xconnection_id = query_info['xconnection_id']
 			query_text = query_info['query_text']
+			file_ext = query_text.lower().split('.')[-1]
+			fn_hidden = f'/data/distillery/query/.{xquery_id}.{file_ext}'
+			fn = f'/data/distillery/query/{xquery_id}.{file_ext}'
 			if xconnection_id == 'HTTP':
-				if query_text.lower().endswith('.csv'):
-					async with aiohttp.ClientSession() as session:
-						async with session.get(query_text) as resp:
-							data = await resp.content.read()
-					async with aiofiles.open(fn_hidden, 'w') as fh:
-						await fh.write(data.decode())
+				async with aiohttp.ClientSession() as session:
+					async with session.get(query_text) as resp:
+						data = await resp.content.read()
+				async with aiofiles.open(fn_hidden, 'w') as fh:
+					await fh.write(data.decode())
+				if os.path.exists(fn):
 					await aiofiles.os.remove(fn)
-					await aiofiles.os.rename(fn_hidden, fn)
-					logging.info(f'Ready: {fn}')
+				await aiofiles.os.rename(fn_hidden, fn)
+				logging.info(f'Ready: {fn}')
 
 
 async def channel_reader(channel):

@@ -24,7 +24,7 @@ def is_valid(form):
 	return True
 
 
-@aiohttp_jinja2.template('html/connection.jinja2')
+@aiohttp_jinja2.template('html/connection.html')
 async def connection(request):
 	async with (request.app['pg_pool']).acquire(timeout=2) as pgconn:
 		columns = ['xconnection_id'] + FORM_FIELDS.copy()

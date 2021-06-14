@@ -6,6 +6,10 @@
 <form name="new" action="query" method="post">
 <ul>
 	<li class="formrow">
+		<label for="name">name:</label>
+		<input id="name" type="text" name="name" value="" required/>
+	</li>
+	<li class="formrow">
 		<label for="xconnection_id">xconnection_id:</label>
 		<select id="xconnection_id" name="xconnection_id">
 			{% for xconnection_label in xconnection_labels: %}

@@ -6,6 +6,7 @@ import aiohttp_jinja2
 
 
 FORM_FIELDS = [
+	'name',
 	'xconnection_id',
 	'query_text',
 ]

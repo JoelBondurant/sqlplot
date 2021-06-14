@@ -31,6 +31,7 @@ async def app_factory(argv=[]):
 		web.get('/query', query.query),
 		web.post('/query', query.query),
 		web.get('/view', view.view),
+		web.post('/view', view.view),
 		web.get('/dashboard', dashboard.dashboard),
 		web.static('/css/', './static/css/', show_index=False),
 		web.static('/data', '/data/distillery/query/', show_index=True),
@@ -48,7 +49,7 @@ async def app_factory(argv=[]):
 	app['pg_pool'] = pg_pool
 	# Redis Pool:
 	redis_host = app['config']['redis']['host']
-	app['redis'] = await aioredis.create_connection(f'redis://{redis_host}')
+	app['redis'] = await aioredis.create_redis_pool(f'redis://{redis_host}')
 	return app
 
 
