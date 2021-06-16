@@ -38,7 +38,7 @@ async def query(request):
 			form = await request.post()
 			form = set_form_defaults(form)
 			if is_valid(form):
-				xquery_id = secrets.token_hex(16)
+				xquery_id = 'x' + secrets.token_hex(16)[1:]
 				record = tuple([xquery_id] + [form[k] for k in FORM_FIELDS])
 				logging.debug(f'Record: {record}')
 				result = await pgconn.copy_records_to_table('query', records=[record], columns=columns)

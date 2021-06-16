@@ -21,10 +21,33 @@
 <h2>Distillery Dashboard</h2>
 
 <div id="main">
-<div id="container" style="width: 800px; height: 600px; border: 1px solid grey" autofocus>
+<div id="container" style="width: 1600px; height: 600px; border: 1px solid grey" 
+onclick="
+var spec = window.editor.getValue();
+console.log('new spec:' + spec);
+var specs = spec.split('\n');
+var xviewIds = [];
+for (i=0; i< specs.length; i++) {
+	if (specs[i].startsWith('<view ') && specs[i].endsWith('</view>')) {
+		xviewId = specs[i].match('[a-zA-Z0-9]{32}')[0];
+		xviewIds.push(xviewId);
+	}
+}
+console.log('xviewIds: ' + xviewIds);
+spec = spec.replaceAll('<view ', '<div ').replaceAll('</view>','</div>');
+
+console.log('dashboard spec:' + spec);
+document.getElementById('dashboard').innerHTML = spec;
+for (xviewId of xviewIds) {
+	console.log('vega embed:' + xviewId);
+	vspec = JSON.parse(await (await fetch('/view?xview_id='+xviewId)).json());
+	vegaEmbed('#' + xviewId, vspec);
+}
+"
+ autofocus>
 </div>
 
-<div id="vis"></div>
+<div id="dashboard"></div>
 </div>
 
 <script>
@@ -36,7 +59,7 @@
 <script>
 	window.editor = monaco.editor.create(document.getElementById('container'), {
 		value: '',
-		language: 'json',
+		language: 'html',
 		scrollbar: {
 			vertical: 'auto',
 			horizontal: 'auto'
@@ -45,5 +68,6 @@
 		automaticLayout: true,
 	});
 </script>
+
 </body>
 </html>

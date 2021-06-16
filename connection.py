@@ -31,7 +31,8 @@ async def connection(request):
 		if request.method == 'POST':
 			form = await request.post()
 			if is_valid(form):
-				record = tuple([secrets.token_hex(16)] + [form[k] for k in FORM_FIELDS])
+				xconnection_id = 'x' + secrets.token_hex(16)[1:]
+				record = tuple([xconnection_id] + [form[k] for k in FORM_FIELDS])
 				logging.debug(f'Record: {record}')
 				result = await pgconn.copy_records_to_table('connection', records=[record], columns=columns)
 				raise aiohttp.web.HTTPFound('/connection')
