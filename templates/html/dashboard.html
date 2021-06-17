@@ -5,16 +5,6 @@
 	<script src="https://cdn.jsdelivr.net/npm/vega-embed@6.18.2"></script>
 	<script src="https://cdn.jsdelivr.net/npm/datalib@1.9.3"></script>
 	<link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.0/min/vs/editor/editor.main.css">
-<style>
-#main {
-	display: flex;
-}
-#main div {
-	flex-grow: 0;
-	flex-shrink: 0;
-	flex-basis: 400px;
-}
-</style>
 <script>
 function setDashboard(myhtml) {
 	document.getElementById('dashboard').innerHTML = myhtml;
@@ -23,32 +13,42 @@ async function bindView(vid, xvid) {
 	await vegaEmbed('#'+vid, JSON.parse(await (await fetch('/view?xview_id='+xvid)).json()));
 }
 </script>
-</head>
-<body>
-<h2>Distillery Dashboard</h2>
-
-<div id="main">
-<div id="container" style="width: 1600px; height: 600px; border: 1px solid grey" 
-onclick="
-var spec = window.editor.getValue();
-console.log('new spec:' + spec);
-let specFunc = new Function('(async function(){'+spec+'})();');
-specFunc();
-"
- autofocus>
-</div>
-
-<div id="dashboard"></div>
-</div>
-
 <script>
 	var require = {"paths":{"vs":"https://cdn.jsdelivr.net/npm/monaco-editor@0.25.0/min/vs/"}};
 </script>
 <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.0/min/vs/loader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.0/min/vs/editor/editor.main.nls.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.0/min/vs/editor/editor.main.js"></script>
+<style>
+#main {
+	display: flex;
+}
+#editor {
+	flex: 0 0 500px;
+}
+#dashboard {
+	flex: 1 1 auto;
+}
+</style>
+</head>
+<body>
+<h2>Distillery Dashboard</h2>
+<div id="main">
+
+	<div id="editor" style="width: 1800px; height: 800px; border: 1px solid grey" 
+	onclick="
+		var spec = window.editor.getValue();
+		let specFunc = new Function('(async function(){'+spec+'})();');
+		specFunc();
+	"
+	 autofocus>
+	</div>
+
+	<div id="dashboard"></div>
+</div>
+
 <script>
-	window.editor = monaco.editor.create(document.getElementById('container'), {
+	window.editor = monaco.editor.create(document.getElementById('editor'), {
 		value: '',
 		language: 'javascript',
 		scrollbar: {
