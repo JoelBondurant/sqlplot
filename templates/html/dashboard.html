@@ -15,7 +15,6 @@
 	flex-basis: 400px;
 }
 </style>
-
 </head>
 <body>
 <h2>Distillery Dashboard</h2>
@@ -25,24 +24,8 @@
 onclick="
 var spec = window.editor.getValue();
 console.log('new spec:' + spec);
-var specs = spec.split('\n');
-var xviewIds = [];
-for (i=0; i< specs.length; i++) {
-	if (specs[i].startsWith('<view ') && specs[i].endsWith('</view>')) {
-		xviewId = specs[i].match('[a-zA-Z0-9]{32}')[0];
-		xviewIds.push(xviewId);
-	}
-}
-console.log('xviewIds: ' + xviewIds);
-spec = spec.replaceAll('<view ', '<div ').replaceAll('</view>','</div>');
-
-console.log('dashboard spec:' + spec);
-document.getElementById('dashboard').innerHTML = spec;
-for (xviewId of xviewIds) {
-	console.log('vega embed:' + xviewId);
-	vspec = JSON.parse(await (await fetch('/view?xview_id='+xviewId)).json());
-	vegaEmbed('#' + xviewId, vspec);
-}
+let specFunc = new Function('(async function(){'+spec+'})();');
+specFunc();
 "
  autofocus>
 </div>
@@ -59,7 +42,7 @@ for (xviewId of xviewIds) {
 <script>
 	window.editor = monaco.editor.create(document.getElementById('container'), {
 		value: '',
-		language: 'html',
+		language: 'javascript',
 		scrollbar: {
 			vertical: 'auto',
 			horizontal: 'auto'
