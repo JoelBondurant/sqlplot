@@ -15,6 +15,14 @@
 	flex-basis: 400px;
 }
 </style>
+<script>
+function setDashboard(myhtml) {
+	document.getElementById('dashboard').innerHTML = myhtml;
+}
+async function bindView(vid, xvid) {
+	await vegaEmbed('#'+vid, JSON.parse(await (await fetch('/view?xview_id='+xvid)).json()));
+}
+</script>
 </head>
 <body>
 <h2>Distillery Dashboard</h2>
