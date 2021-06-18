@@ -1,0 +1,47 @@
+{% include "html/header.html" %}
+	<script src="https://cdn.jsdelivr.net/npm/d3@7.0.0"></script>
+	<script src="https://cdn.jsdelivr.net/npm/vega@5.20.2"></script>
+	<script src="https://cdn.jsdelivr.net/npm/vega-lite@5.1.0"></script>
+	<script src="https://cdn.jsdelivr.net/npm/vega-embed@6.18.2"></script>
+	<script src="https://cdn.jsdelivr.net/npm/datalib@1.9.3"></script>
+<script>
+function setDashboard(myhtml) {
+	document.getElementById('dashboard').innerHTML = myhtml;
+}
+async function bindView(vid, xvid, config={}) {
+	var spec = JSON.parse(await (await fetch('/view?xid='+xvid)).json());
+	var baseConfig = {actions:false, theme:'dark'};
+	var embedConfig = {...baseConfig, ...config};
+	await vegaEmbed('#'+vid, spec, embedConfig);
+}
+async function dashboard() {
+	console.log('scrambles on the cheese biscuits');
+	dashURL = '/dashboard?xid={{xdashboard_id}}';
+	console.log('dashURL:' + dashURL);
+	var dashText = await (await fetch(dashURL)).json();
+	console.log('dashText: ' + dashText);
+	let dashboardRender = new Function('(async function(){'+dashText+'})();');
+	dashboardRender();
+	console.log('cheese biscuits over');
+}
+</script>
+<style>
+#main {
+	display: flex;
+}
+#dashboard {
+	flex: 1 1 auto;
+}
+</style>
+</head>
+<body>
+<div id="main">
+	<div id="dashboard"></div>
+</div>
+<script>
+	console.log('whadup pippy long stocking');
+	dashboard();
+	console.log('pippy out');
+</script>
+</body>
+</html>

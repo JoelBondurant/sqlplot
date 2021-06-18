@@ -10,6 +10,7 @@ import asyncpg
 import aioredis
 import jinja2
 import ujson
+import uvloop
 
 import home
 import connection
@@ -19,6 +20,7 @@ import dashboard
 
 
 async def app_factory(argv=[]):
+	uvloop.install()
 	app = web.Application()
 	logging.basicConfig(level=logging.DEBUG)
 	logging.info('Distillery Started')
