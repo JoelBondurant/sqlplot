@@ -23,9 +23,9 @@ async def dashboard(request):
 			xid = rquery['xid']
 			config = await pgconn.fetchval(f'select configuration from dashboard where xid = $1', xid, timeout=4)
 			return aiohttp.web.json_response(config)
-		if 'xdid' in rquery:
-			xid = rquery['xdid']
-			context = {'xdashboard_id':xid}
+		if 'xidh' in rquery:
+			xidh = rquery['xidh']
+			context = {'xdashboard_id': xidh}
 			return aiohttp_jinja2.render_template('html/dashboard_view.html', request, context)
 		columns = ['xid'] + FORM_FIELDS.copy()
 		dashboards = await pgconn.fetch(f'select {", ".join(columns)} from dashboard', timeout=4)
