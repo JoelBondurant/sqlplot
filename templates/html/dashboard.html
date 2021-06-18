@@ -9,8 +9,11 @@
 function setDashboard(myhtml) {
 	document.getElementById('dashboard').innerHTML = myhtml;
 }
-async function bindView(vid, xvid) {
-	await vegaEmbed('#'+vid, JSON.parse(await (await fetch('/view?xview_id='+xvid)).json()));
+async function bindView(vid, xvid, config={}) {
+	var spec = JSON.parse(await (await fetch('/view?xid='+xvid)).json());
+	var baseConfig = {actions:false, theme:'dark'};
+	var embedConfig = {...baseConfig, ...config};
+	await vegaEmbed('#'+vid, spec, embedConfig);
 }
 </script>
 <script>
@@ -38,6 +41,7 @@ async function bindView(vid, xvid) {
 	<div id="editor" style="width: 1800px; height: 800px; border: 1px solid grey" 
 	onclick="
 		var spec = window.editor.getValue();
+		document.getElementById('configuration').value = spec;
 		let specFunc = new Function('(async function(){'+spec+'})();');
 		specFunc();
 	"
@@ -59,6 +63,25 @@ async function bindView(vid, xvid) {
 		automaticLayout: true,
 	});
 </script>
+
+<form name="new" action="dashboard" method="post">
+<ul>
+	<li class="formrow">
+		<label for="name">name:</label>
+		<input id="name" type="text" name="name" value="" required/>
+	</li>
+	<input type="hidden" id="configuration" name="configuration" value="">
+</ul>
+<br/>
+<input type="submit" value="+">
+</form>
+
+
+{% for dashboard in dashboards: %}
+	{{ dashboard }} <br/>
+{% endfor %}
+
+
 
 </body>
 </html>

@@ -32,19 +32,19 @@ async def query(request):
 	redis = request.app['redis']
 	async with (request.app['pg_pool']).acquire(timeout=2) as pgconn:
 		logging.debug(f'Database connections acquired.')
-		columns = ['xquery_id'] + FORM_FIELDS.copy()
+		columns = ['xid'] + FORM_FIELDS.copy()
 		if request.method == 'POST':
 			logging.debug(f'Query posted.')
 			form = await request.post()
 			form = set_form_defaults(form)
 			if is_valid(form):
-				xquery_id = 'x' + secrets.token_hex(16)[1:]
-				record = tuple([xquery_id] + [form[k] for k in FORM_FIELDS])
+				xid = 'x' + secrets.token_hex(16)[1:]
+				record = tuple([xid] + [form[k] for k in FORM_FIELDS])
 				logging.debug(f'Record: {record}')
 				result = await pgconn.copy_records_to_table('query', records=[record], columns=columns)
 				event = {
 					'event_type': 'new',
-					'xquery_id': xquery_id,
+					'xid': xid,
 				}
 				redis.publish_json('query', event)
 				raise aiohttp.web.HTTPFound('/query')
@@ -52,7 +52,7 @@ async def query(request):
 		queries = await pgconn.fetch(f'select {", ".join(columns)} from query', timeout=4)
 		queries = [dict(x) for x in queries]
 		logging.debug(f'Fetching connections...')
-		cdata = await pgconn.fetch(f'select xconnection_id, name from connection', timeout=4)
+		cdata = await pgconn.fetch(f'select xid, name from connection', timeout=4)
 		logging.debug(f'Finishing query response.')
 		xconnection_ids = XCONNECTION_IDS.copy() + [x[0] for x in cdata]
 		xconnection_names = XCONNECTION_IDS.copy() + [x[1] + '-' + x[0][:4] for x in cdata]

@@ -18,16 +18,16 @@ app = {}
 
 async def process_event(event):
 	if event['event_type'] == 'new':
-		xquery_id = event['xquery_id']
+		xid = event['xid']
 		async with (app['pg_pool']).acquire(timeout=2) as pgconn:
-			query_info_sql = 'select * from query where xquery_id = $1'
-			query_info = dict(await pgconn.fetchrow(query_info_sql, xquery_id))
+			query_info_sql = 'select * from query where xid = $1'
+			query_info = dict(await pgconn.fetchrow(query_info_sql, xid))
 			logging.debug(f'query_info: {query_info}')
 			xconnection_id = query_info['xconnection_id']
 			query_text = query_info['query_text']
 			file_ext = query_text.lower().split('.')[-1]
-			fn_hidden = f'/data/distillery/query/.{xquery_id}.{file_ext}'
-			fn = f'/data/distillery/query/{xquery_id}.{file_ext}'
+			fn_hidden = f'/data/distillery/query/.{xid}.{file_ext}'
+			fn = f'/data/distillery/query/{xid}.{file_ext}'
 			if xconnection_id == 'HTTP':
 				async with aiohttp.ClientSession() as session:
 					async with session.get(query_text) as resp:
