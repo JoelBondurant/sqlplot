@@ -4,6 +4,7 @@ import secrets
 import aiohttp
 import aiohttp_jinja2
 
+
 FORM_FIELDS = [
 	'name',
 	'configuration',
@@ -16,14 +17,6 @@ def is_valid(form):
 
 async def view(request):
 	async with (request.app['pg_pool']).acquire(timeout=2) as pgconn:
-		rquery = dict(request.query)
-		if 'xid' in rquery:
-			xid = rquery['xid']
-			config = await pgconn.fetchval(f'select configuration from view where xid = $1', xid, timeout=4)
-			return aiohttp.web.json_response(config)
-		columns = ['xid'] + FORM_FIELDS.copy()
-		views = await pgconn.fetch(f'select {", ".join(columns)} from view', timeout=4)
-		views = [dict(x) for x in views]
 		if request.method == 'POST':
 			logging.debug(f'View posted.')
 			form = await request.post()
@@ -33,6 +26,13 @@ async def view(request):
 				logging.debug(f'Record: {record}')
 				result = await pgconn.copy_records_to_table('view', records=[record], columns=columns)
 				raise aiohttp.web.HTTPFound('/view')
+		rquery = dict(request.query)
+		if 'xid' in rquery:
+			xid = rquery['xid']
+			config = await pgconn.fetchval(f'select configuration from view where xid = $1', xid, timeout=4)
+			return aiohttp.web.json_response(config)
+		views = await pgconn.fetch(f'select xid, name from view', timeout=4)
+		views = [dict(x) for x in views]
 		context = {'views': views}
 		resp = aiohttp_jinja2.render_template('html/view.html', request, context)
 		return resp

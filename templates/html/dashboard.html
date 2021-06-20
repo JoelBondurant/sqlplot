@@ -6,8 +6,8 @@
 	<script src="https://cdn.jsdelivr.net/npm/datalib@1.9.3"></script>
 	<link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.0/min/vs/editor/editor.main.css">
 <script>
-function setDashboard(myhtml) {
-	document.getElementById('dashboard').innerHTML = myhtml;
+function dashboard() {
+	return document.getElementById('dashboard');
 }
 async function bindView(vid, xvid, config={}) {
 	var spec = JSON.parse(await (await fetch('/view?xid='+xvid)).json());
@@ -76,10 +76,14 @@ async function bindView(vid, xvid, config={}) {
 <input type="submit" value="+">
 </form>
 
-
-{% for dashboard in dashboards: %}
-	{{ dashboard }} <br/>
-{% endfor %}
-
+<form name="selection" action="">
+	<label for="selection">Dashboards:</label>
+	<select name="selection" id="selection" onchange="console.log('Dashboard selected:'+this.value);">
+		<option hidden selected></option>
+	{% for dashboard in dashboards %}
+		<option value="{{ dashboard['xid'] }}">{{ dashboard['name'] }}</option>
+	{% endfor %}
+	</select>
+</form>
 </body>
 </html>

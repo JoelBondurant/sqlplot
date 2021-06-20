@@ -9,10 +9,10 @@
 #main {
 	display: flex;
 }
-#main div {
+#container {
 	flex-grow: 0;
 	flex-shrink: 0;
-	flex-basis: 400px;
+	flex-basis: 600px;
 }
 </style>
 
@@ -23,9 +23,9 @@
 <div id="main">
 <div id="container" style="width: 800px; height: 600px; border: 1px solid grey"
 onclick="
-var spec = window.editor.getValue();
-document.getElementById('configuration').value = spec;
-eval('spec='+spec+';vegaEmbed(\'#vis\', spec, {actions:false, theme: \'dark\'})')
+	var spec = window.editor.getValue();
+	document.getElementById('configuration').value = spec;
+	vegaEmbed('#vis', JSON.parse(spec), {actions:false, theme:'dark'});
 "
  autofocus>
 </div>
@@ -54,24 +54,25 @@ eval('spec='+spec+';vegaEmbed(\'#vis\', spec, {actions:false, theme: \'dark\'})'
 
 
 <form name="new" action="view" method="post">
-<ul>
-	<li class="formrow">
-		<label for="name">name:</label>
-		<input id="name" type="text" name="name" value="" required/>
-	</li>
-	<input type="hidden" id="configuration" name="configuration" value="">
-</ul>
-<br/>
-<input type="submit" value="+">
+	<ul>
+		<li class="formrow">
+			<label for="name">name:</label>
+			<input id="name" type="text" name="name" value="" required/>
+		</li>
+		<input type="hidden" id="configuration" name="configuration" value="">
+	</ul>
+	<br/>
+	<input type="submit" value="+">
 </form>
-
-
-{% for view in views: %}
-	{{ view }} <br/>
-{% endfor %}
-
-
-
+<form name="selection" action="">
+	<label for="selection">Views:</label>
+	<select name="selection" id="selection" onchange="console.log('View selected:'+this.value);">
+		<option hidden selected></option>
+	{% for view in views %}
+		<option value="{{ view['xid'] }}">{{ view['name'] }}</option>
+	{% endfor %}
+	</select>
+</form>
 
 
 </body>

@@ -16,20 +16,7 @@ def is_valid(form):
 
 
 async def dashboard(request):
-	logging.debug(f'Dashboard hit.')
 	async with (request.app['pg_pool']).acquire(timeout=2) as pgconn:
-		rquery = dict(request.query)
-		if 'xid' in rquery:
-			xid = rquery['xid']
-			config = await pgconn.fetchval(f'select configuration from dashboard where xid = $1', xid, timeout=4)
-			return aiohttp.web.json_response(config)
-		if 'xidh' in rquery:
-			xidh = rquery['xidh']
-			context = {'xdashboard_id': xidh}
-			return aiohttp_jinja2.render_template('html/dashboard_view.html', request, context)
-		columns = ['xid'] + FORM_FIELDS.copy()
-		dashboards = await pgconn.fetch(f'select {", ".join(columns)} from dashboard', timeout=4)
-		dashboards = [dict(x) for x in dashboards]
 		if request.method == 'POST':
 			logging.debug(f'Dashboard posted.')
 			form = await request.post()
@@ -37,8 +24,20 @@ async def dashboard(request):
 				xid = 'x' + secrets.token_hex(16)[1:]
 				record = tuple([xid] + [form[k] for k in FORM_FIELDS])
 				logging.debug(f'Record: {record}')
+				columns = ['xid'] + FORM_FIELDS.copy()
 				result = await pgconn.copy_records_to_table('dashboard', records=[record], columns=columns)
 				raise aiohttp.web.HTTPFound('/dashboard')
+		rquery = dict(request.query)
+		if 'xid' in rquery:
+			xid = rquery['xid']
+			config = await pgconn.fetchval(f'select configuration from dashboard where xid = $1', xid, timeout=4)
+			return aiohttp.web.json_response(config)
+		if 'xidh' in rquery:
+			xidh = rquery['xidh']
+			context = {'xid': xidh}
+			return aiohttp_jinja2.render_template('html/dashboard_view.html', request, context)
+		dashboards = await pgconn.fetch(f'select xid, name from dashboard', timeout=4)
+		dashboards = [dict(x) for x in dashboards]
 		context = {'dashboards': dashboards}
 		resp = aiohttp_jinja2.render_template('html/dashboard.html', request, context)
 		return resp
