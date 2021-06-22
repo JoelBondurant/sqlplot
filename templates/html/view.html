@@ -56,7 +56,10 @@ onclick="
 async function selectionChanged() {
 	var sel = document.getElementById('selection');
 	var xid = sel.value;
-	var spec = await (await fetch('/view?xid=' + xid)).json();
+	var spec = "";
+	if (xid.length == 32) {
+		spec = await (await fetch('/view?xid=' + xid)).json();
+	}
 	document.getElementById('xid').value = xid;
 	document.getElementById('configuration').value = spec;
 	var name = sel.options[sel.selectedIndex].text;
@@ -80,7 +83,7 @@ async function selectionChanged() {
 <form name="selection" action="">
 	<label for="selection">Views:</label>
 	<select name="selection" id="selection" onchange="selectionChanged();">
-		<option selected></option>
+		<option value="" selected></option>
 	{% for view in views %}
 		<option value="{{ view['xid'] }}">{{ view['name'] }}</option>
 	{% endfor %}
