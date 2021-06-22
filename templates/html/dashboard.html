@@ -41,7 +41,7 @@ async function bindView(vid, xvid, config={}) {
 <h2>Distillery Dashboard</h2>
 <div id="main">
 
-	<div id="editor" style="width: 1800px; height: 400px; border: 1px solid grey"
+	<div id="editor" style="width: 800px; height: 600px; border: 1px solid grey"
 	onclick="
 		var spec = window.editor.getValue();
 		document.getElementById('configuration').value = spec;
@@ -73,6 +73,7 @@ async function bindView(vid, xvid, config={}) {
 		<label for="name">name:</label>
 		<input id="name" type="text" name="name" value="" required/>
 	</li>
+	<input type="hidden" id="xid" name="xid" value="">
 	<input type="hidden" id="configuration" name="configuration" value="">
 </ul>
 <br/>
@@ -81,15 +82,10 @@ async function bindView(vid, xvid, config={}) {
 
 <script>
 async function selectionChanged() {
-	console.log('Dashboard selection changed.');
 	var xid = document.getElementById('selection').value;
-	console.log('Dashboard selected:' + xid);
 	var spec = await (await fetch('/dashboard?xid=' + xid)).json();
-	console.log('Dashboard spec obtained.' + spec);
 	document.getElementById('configuration').value = spec;
-	console.log('Form reconfigured.');
 	window.editor.setValue(spec);
-	console.log('Editor ready.');
 }
 </script>
 

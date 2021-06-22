@@ -54,15 +54,14 @@ onclick="
 
 <script>
 async function selectionChanged() {
-	console.log('View selection changed.');
-	var xid = document.getElementById('selection').value;
-	console.log('View selected:' + xid);
+	var sel = document.getElementById('selection');
+	var xid = sel.value;
 	var spec = await (await fetch('/view?xid=' + xid)).json();
-	console.log('View spec obtained.' + spec);
+	document.getElementById('xid').value = xid;
 	document.getElementById('configuration').value = spec;
-	console.log('Form reconfigured.');
+	var name = sel.options[sel.selectedIndex].text;
+	document.getElementById('name').value = name;
 	window.editor.setValue(spec);
-	console.log('Editor ready.');
 }
 </script>
 
@@ -72,6 +71,7 @@ async function selectionChanged() {
 			<label for="name">name:</label>
 			<input id="name" type="text" name="name" value="" required/>
 		</li>
+		<input type="hidden" id="xid" name="xid" value="">
 		<input type="hidden" id="configuration" name="configuration" value="">
 	</ul>
 	<br/>
@@ -80,7 +80,7 @@ async function selectionChanged() {
 <form name="selection" action="">
 	<label for="selection">Views:</label>
 	<select name="selection" id="selection" onchange="selectionChanged();">
-		<option hidden selected></option>
+		<option selected></option>
 	{% for view in views %}
 		<option value="{{ view['xid'] }}">{{ view['name'] }}</option>
 	{% endfor %}

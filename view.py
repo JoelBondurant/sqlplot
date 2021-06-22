@@ -21,10 +21,20 @@ async def view(request):
 			logging.debug(f'View posted.')
 			form = await request.post()
 			if is_valid(form):
-				xid = 'x' + secrets.token_hex(16)[1:]
-				record = tuple([xid] + [form[k] for k in FORM_FIELDS])
-				logging.debug(f'Record: {record}')
-				result = await pgconn.copy_records_to_table('view', records=[record], columns=columns)
+				if len(form['xid']) == 32:
+					xid = form['xid']
+					record = tuple([xid] + [form[k] for k in FORM_FIELDS])
+					logging.debug(f'New view: {record}')
+					await pgconn.execute('''
+						update view
+						set name = $2, configuration = $3
+						where xid = $1;
+					''', xid, form['name'], form['configuration'])
+				else:
+					xid = 'x' + secrets.token_hex(16)[1:]
+					record = tuple([xid] + [form[k] for k in FORM_FIELDS])
+					logging.debug(f'New view: {record}')
+					result = await pgconn.copy_records_to_table('view', records=[record], columns=columns)
 				raise aiohttp.web.HTTPFound('/view')
 		rquery = dict(request.query)
 		if 'xid' in rquery:
