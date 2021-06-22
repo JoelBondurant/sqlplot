@@ -1,7 +1,63 @@
 {% include "html/header.html" %}
+	<link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.0/min/vs/editor/editor.main.css">
+<style>
+#main {
+	display: flex;
+}
+#container {
+	flex-grow: 0;
+	flex-shrink: 0;
+	flex-basis: 200px;
+}
+</style>
 </head>
 <body>
-<h2>Distillery Query</h2>
+
+<div id="main"></div>
+<div id="container" style="width: 800px; height: 300px; border: 1px solid grey"
+onclick="
+	var queryText = window.editor.getValue();
+	document.getElementById('query_text').value = queryText;
+"
+autofocus>
+<script>
+	var require = {"paths":{"vs":"https://cdn.jsdelivr.net/npm/monaco-editor@0.25.0/min/vs/"}};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.0/min/vs/loader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.0/min/vs/editor/editor.main.nls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.0/min/vs/editor/editor.main.js"></script>
+<script>
+	window.editor = monaco.editor.create(document.getElementById('container'), {
+		value: '',
+		language: 'sql',
+		scrollbar: {
+			vertical: 'auto',
+			horizontal: 'auto'
+		},
+		theme: 'vs-dark',
+		automaticLayout: true,
+	});
+</script>
+
+<script>
+async function selectionChanged() {
+	var sel = document.getElementById('selection');
+	var xid = sel.value;
+	var queryText = "";
+	var xconnectionId = "";
+	if (xid.length == 32) {
+		var queryJson = await (await fetch('/query?xid=' + xid)).json();
+		queryText = queryJson['query_text'];
+		xconnectionId = queryJson['xconnection_id'];
+	}
+	document.getElementById('xid').value = xid;
+	document.getElementById('query_text').value = queryText;
+	document.getElementById('xconnection_id').value = xconnectionId;
+	var name = sel.options[sel.selectedIndex].text;
+	document.getElementById('name').value = name;
+	window.editor.setValue(queryText);
+}
+</script>
 
 <form name="new" action="query" method="post">
 <ul>
@@ -17,20 +73,23 @@
 			{% endfor %}
 		</select>
 	</li>
-	<li class="formrow">
-		<label for="query_text">query_text:</label>
-		<input id="query_text" type="textarea" name="query_text" value="" required/>
-	</li>
+	<input type="hidden" id="xid" name="xid" value="">
+	<input type="hidden" id="query_text" name="query_text" value="">
 </ul>
 <br/>
 <input type="submit" value="+">
 </form>
 
 
-{% for query in queries: %}
-	{{ query }} <br/>
-{% endfor %}
-
+<form name="selection" action="">
+	<label for="selection">Queries:</label>
+	<select name="selection" id="selection" onchange="selectionChanged();">
+		<option value="" selected></option>
+	{% for query in queries %}
+		<option value="{{ query['xid'] }}">{{ query['name'] }}</option>
+	{% endfor %}
+	</select>
+</form>
 
 </body>
 </html>
