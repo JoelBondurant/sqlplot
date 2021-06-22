@@ -1,5 +1,5 @@
 {% include "html/header.html" %}
-	<link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.0/min/vs/editor/editor.main.css">
+	<link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/editor/editor.main.css">
 <style>
 #main {
 	display: flex;
@@ -21,11 +21,11 @@ onclick="
 "
 autofocus>
 <script>
-	var require = {"paths":{"vs":"https://cdn.jsdelivr.net/npm/monaco-editor@0.25.0/min/vs/"}};
+	var require = {"paths":{"vs":"https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs"}};
 </script>
-<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.0/min/vs/loader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.0/min/vs/editor/editor.main.nls.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.0/min/vs/editor/editor.main.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/loader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/editor/editor.main.nls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/editor/editor.main.js"></script>
 <script>
 	window.editor = monaco.editor.create(document.getElementById('container'), {
 		value: '',
