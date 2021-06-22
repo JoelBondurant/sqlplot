@@ -9,6 +9,9 @@
 function dashboard() {
 	return document.getElementById('dashboard');
 }
+function setDashboard(html) {
+	dashboard().innerHTML = html;
+}
 async function bindView(vid, xvid, config={}) {
 	var spec = JSON.parse(await (await fetch('/view?xid='+xvid)).json());
 	var baseConfig = {actions:false, theme:'dark'};
@@ -38,7 +41,7 @@ async function bindView(vid, xvid, config={}) {
 <h2>Distillery Dashboard</h2>
 <div id="main">
 
-	<div id="editor" style="width: 1800px; height: 800px; border: 1px solid grey" 
+	<div id="editor" style="width: 1800px; height: 400px; border: 1px solid grey"
 	onclick="
 		var spec = window.editor.getValue();
 		document.getElementById('configuration').value = spec;
@@ -76,9 +79,23 @@ async function bindView(vid, xvid, config={}) {
 <input type="submit" value="+">
 </form>
 
+<script>
+async function selectionChanged() {
+	console.log('Dashboard selection changed.');
+	var xid = document.getElementById('selection').value;
+	console.log('Dashboard selected:' + xid);
+	var spec = await (await fetch('/dashboard?xid=' + xid)).json();
+	console.log('Dashboard spec obtained.' + spec);
+	document.getElementById('configuration').value = spec;
+	console.log('Form reconfigured.');
+	window.editor.setValue(spec);
+	console.log('Editor ready.');
+}
+</script>
+
 <form name="selection" action="">
 	<label for="selection">Dashboards:</label>
-	<select name="selection" id="selection" onchange="console.log('Dashboard selected:'+this.value);">
+	<select name="selection" id="selection" onchange="selectionChanged();">
 		<option hidden selected></option>
 	{% for dashboard in dashboards %}
 		<option value="{{ dashboard['xid'] }}">{{ dashboard['name'] }}</option>

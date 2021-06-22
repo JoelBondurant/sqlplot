@@ -52,6 +52,19 @@ onclick="
 	});
 </script>
 
+<script>
+async function selectionChanged() {
+	console.log('View selection changed.');
+	var xid = document.getElementById('selection').value;
+	console.log('View selected:' + xid);
+	var spec = await (await fetch('/view?xid=' + xid)).json();
+	console.log('View spec obtained.' + spec);
+	document.getElementById('configuration').value = spec;
+	console.log('Form reconfigured.');
+	window.editor.setValue(spec);
+	console.log('Editor ready.');
+}
+</script>
 
 <form name="new" action="view" method="post">
 	<ul>
@@ -66,7 +79,7 @@ onclick="
 </form>
 <form name="selection" action="">
 	<label for="selection">Views:</label>
-	<select name="selection" id="selection" onchange="console.log('View selected:'+this.value);">
+	<select name="selection" id="selection" onchange="selectionChanged();">
 		<option hidden selected></option>
 	{% for view in views %}
 		<option value="{{ view['xid'] }}">{{ view['name'] }}</option>
