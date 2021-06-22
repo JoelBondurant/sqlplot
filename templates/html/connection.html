@@ -1,7 +1,59 @@
 {% include "html/header.html" %}
+	<link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.0/min/vs/editor/editor.main.css">
+<style>
+#main {
+	display: flex;
+}
+#container {
+	flex-grow: 0;
+	flex-shrink: 0;
+	flex-basis: 200px;
+}
+</style>
 </head>
 <body>
-<h2>Distillery Connection</h2>
+
+<div id="main"></div>
+<div id="container" style="width: 400px; height: 300px; border: 1px solid grey"
+onclick="
+	var spec = window.editor.getValue();
+	document.getElementById('configuration').value = spec;
+"
+autofocus>
+<script>
+	var require = {"paths":{"vs":"https://cdn.jsdelivr.net/npm/monaco-editor@0.25.0/min/vs/"}};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.0/min/vs/loader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.0/min/vs/editor/editor.main.nls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.0/min/vs/editor/editor.main.js"></script>
+<script>
+	window.editor = monaco.editor.create(document.getElementById('container'), {
+		value: '',
+		language: 'json',
+		scrollbar: {
+			vertical: 'auto',
+			horizontal: 'auto'
+		},
+		theme: 'vs-dark',
+		automaticLayout: true,
+	});
+</script>
+
+<script>
+async function selectionChanged() {
+	var sel = document.getElementById('selection');
+	var xid = sel.value;
+	var spec = "";
+	if (xid.length == 32) {
+		spec = await (await fetch('/connection?xid=' + xid)).json();
+	}
+	document.getElementById('xid').value = xid;
+	document.getElementById('configuration').value = spec;
+	var name = sel.options[sel.selectedIndex].text;
+	document.getElementById('name').value = name;
+	window.editor.setValue(spec);
+}
+</script>
 
 <form name="new" action="connection" method="post">
 <ul>
@@ -16,20 +68,22 @@
 			<option value="MySQL">MySQL</option>
 		</select>
 	</li>
-	<li class="formrow">
-		<label for="configuration">configuration:</label>
-		<input id="configuration" type="textarea" name="configuration" value="" required/>
-	</li>
+	<input type="hidden" id="xid" name="xid" value="">
+	<input type="hidden" id="configuration" name="configuration" value="">
 </ul>
 <br/>
 <input type="submit" value="+">
 </form>
 
-
-{% for connection in connections: %}
-	{{ connection }} <br/>
-{% endfor %}
-
+<form name="selection" action="">
+	<label for="selection">Connections:</label>
+	<select name="selection" id="selection" onchange="selectionChanged();">
+		<option value="" selected></option>
+	{% for conn in connections %}
+		<option value="{{ conn['xid'] }}">{{ conn['name'] }}</option>
+	{% endfor %}
+	</select>
+</form>
 
 </body>
 </html>
