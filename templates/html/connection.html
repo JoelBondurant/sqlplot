@@ -43,15 +43,19 @@ autofocus>
 async function selectionChanged() {
 	var sel = document.getElementById('selection');
 	var xid = sel.value;
-	var spec = "";
+	var config = "";
+	var type = "";
 	if (xid.length == 32) {
-		spec = await (await fetch('/connection?xid=' + xid)).json();
+		var connJson = await (await fetch('/connection?xid=' + xid)).json();
+		config = connJson['configuration'];
+		type = connJson['type'];
 	}
 	document.getElementById('xid').value = xid;
-	document.getElementById('configuration').value = spec;
+	document.getElementById('configuration').value = config;
+	document.getElementById('type').value = type;
 	var name = sel.options[sel.selectedIndex].text;
 	document.getElementById('name').value = name;
-	window.editor.setValue(spec);
+	window.editor.setValue(config);
 }
 </script>
 

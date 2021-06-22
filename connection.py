@@ -41,19 +41,19 @@ async def connection(request):
 				else:
 					xid = 'x' + secrets.token_hex(16)[1:]
 					record = tuple([xid] + [form[k] for k in FORM_FIELDS])
-					logging.debug(f'Record: {record}')
 					result = await pgconn.copy_records_to_table('connection', records=[record], columns=columns)
 				raise aiohttp.web.HTTPFound('/connection')
 		rquery = dict(request.query)
 		if 'xid' in rquery:
 			xid = rquery['xid']
-			config = await pgconn.fetchval(f'select configuration from connection where xid = $1', xid, timeout=4)
-			return aiohttp.web.json_response(config)
+			conn_json = dict(await pgconn.fetchrow(f'''
+				select {", ".join(columns)} from connection where xid = $1
+			''', xid, timeout=4))
+			return aiohttp.web.json_response(conn_json)
 		connections = await pgconn.fetch(f'select {", ".join(columns)} from connection', timeout=4)
 		connections = [dict(x) for x in connections]
 		for x in connections:
 			if len(x['configuration']) > 0:
-				logging.info(x['configuration'])
 				x['configuration'] = ujson.loads(x['configuration'])
 				if 'password' in x['configuration']:
 					x['configuration']['password'] = '*****'

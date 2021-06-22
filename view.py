@@ -23,7 +23,6 @@ async def view(request):
 				if len(form['xid']) == 32:
 					xid = form['xid']
 					record = tuple([xid] + [form[k] for k in FORM_FIELDS])
-					logging.debug(f'Update view: {record}')
 					await pgconn.execute('''
 						update view
 						set name = $2, configuration = $3
@@ -32,7 +31,6 @@ async def view(request):
 				else:
 					xid = 'x' + secrets.token_hex(16)[1:]
 					record = tuple([xid] + [form[k] for k in FORM_FIELDS])
-					logging.debug(f'New view: {record}')
 					result = await pgconn.copy_records_to_table('view', records=[record], columns=columns)
 				raise aiohttp.web.HTTPFound('/view')
 		rquery = dict(request.query)
