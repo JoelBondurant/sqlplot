@@ -25,7 +25,11 @@
 onclick="
 	var spec = window.editor.getValue();
 	document.getElementById('configuration').value = spec;
-	vegaEmbed('#vis', JSON.parse(spec), {actions:false, theme:'dark'});
+	if (spec.length > 0) {
+		vegaEmbed('#vis', JSON.parse(spec), {actions:false, theme:'dark'});
+	} else {
+		document.getElementById('vis').innerHTML = '';
+	}
 "
  autofocus>
 </div>
