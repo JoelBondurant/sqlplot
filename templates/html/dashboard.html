@@ -82,9 +82,13 @@ async function bindView(vid, xvid, config={}) {
 
 <script>
 async function selectionChanged() {
-	var xid = document.getElementById('selection').value;
+	var sel = document.getElementById('selection');
+	var xid = sel.value;
 	var spec = await (await fetch('/dashboard?xid=' + xid)).json();
+	document.getElementById('xid').value = xid;
 	document.getElementById('configuration').value = spec;
+	var name = sel.options[sel.selectedIndex].text;
+	document.getElementById('name').value = name;
 	window.editor.setValue(spec);
 }
 </script>
@@ -92,7 +96,7 @@ async function selectionChanged() {
 <form name="selection" action="">
 	<label for="selection">Dashboards:</label>
 	<select name="selection" id="selection" onchange="selectionChanged();">
-		<option hidden selected></option>
+		<option selected></option>
 	{% for dashboard in dashboards %}
 		<option value="{{ dashboard['xid'] }}">{{ dashboard['name'] }}</option>
 	{% endfor %}

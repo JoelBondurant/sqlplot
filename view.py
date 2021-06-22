@@ -18,13 +18,12 @@ def is_valid(form):
 async def view(request):
 	async with (request.app['pg_pool']).acquire(timeout=2) as pgconn:
 		if request.method == 'POST':
-			logging.debug(f'View posted.')
 			form = await request.post()
 			if is_valid(form):
 				if len(form['xid']) == 32:
 					xid = form['xid']
 					record = tuple([xid] + [form[k] for k in FORM_FIELDS])
-					logging.debug(f'New view: {record}')
+					logging.debug(f'Update view: {record}')
 					await pgconn.execute('''
 						update view
 						set name = $2, configuration = $3
