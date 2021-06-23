@@ -31,6 +31,7 @@ async def view(request):
 				else:
 					xid = 'x' + secrets.token_hex(16)[1:]
 					record = tuple([xid] + [form[k] for k in FORM_FIELDS])
+					columns = ['xid'] + FORM_FIELDS.copy()
 					result = await pgconn.copy_records_to_table('view', records=[record], columns=columns)
 				raise aiohttp.web.HTTPFound('/view')
 		rquery = dict(request.query)

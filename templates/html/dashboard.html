@@ -9,14 +9,14 @@
 function dashboard() {
 	return document.getElementById('dashboard');
 }
-function setDashboard(html) {
+function html(html) {
 	dashboard().innerHTML = html;
 }
 async function bindView(vid, xvid, config={}) {
 	var spec = JSON.parse(await (await fetch('/view?xid='+xvid)).json());
 	var baseConfig = {actions:false, theme:'dark'};
 	var embedConfig = {...baseConfig, ...config};
-	await vegaEmbed('#'+vid, spec, embedConfig);
+	return vegaEmbed('#'+vid, spec, embedConfig);
 }
 </script>
 <script>
