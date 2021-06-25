@@ -62,11 +62,11 @@ async function selectionChanged() {
 <form name="new" action="query" method="post">
 <ul>
 	<li class="formrow">
-		<label for="name">name:</label>
+		<label for="name">Name:</label>
 		<input id="name" type="text" name="name" value="" required/>
 	</li>
 	<li class="formrow">
-		<label for="xconnection_id">xconnection_id:</label>
+		<label for="xconnection_id">Connection:</label>
 		<select id="xconnection_id" name="xconnection_id">
 			{% for xconnection_label in xconnection_labels: %}
 			<option value="{{ xconnection_label[0] }}">{{ xconnection_label[1] }}</option>
@@ -90,6 +90,14 @@ async function selectionChanged() {
 	{% endfor %}
 	</select>
 </form>
+
+<script>
+function wsTest() {
+	var ws = new WebSocket('ws://127.0.0.1/ws');
+	ws.send('Test websocket message.');
+	ws.close();
+}
+</script>
 
 </body>
 </html>

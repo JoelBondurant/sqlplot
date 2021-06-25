@@ -6,17 +6,18 @@ import sys
 import aiofiles
 from aiohttp import web
 import aiohttp_jinja2
-import asyncpg
 import aioredis
+import asyncpg
 import jinja2
 import ujson
 import uvloop
 
-import home
 import connection
+import dashboard
+import home
 import query
 import view
-import dashboard
+import ws
 
 
 async def app_factory(argv=[]):
@@ -38,6 +39,7 @@ async def app_factory(argv=[]):
 		web.post('/dashboard', dashboard.dashboard),
 		web.static('/css/', './static/css/', show_index=False),
 		web.static('/data', '/data/distillery/query/', show_index=True),
+		web.get('/ws', ws.ws),
 	])
 	async with aiofiles.open('/secrets/distillery.json', 'r') as fin:
 		app['config'] = ujson.loads(await fin.read())
