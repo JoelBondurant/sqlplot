@@ -42,6 +42,6 @@ async def view(request):
 		views = await pgconn.fetch(f'select xid, name from view', timeout=4)
 		views = [dict(x) for x in views]
 		context = {'views': views}
-		resp = aiohttp_jinja2.render_template('html/view.html', request, context)
+		resp = aiohttp_jinja2.render_template('view.html', request, context)
 		return resp
 

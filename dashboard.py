@@ -44,9 +44,9 @@ async def dashboard(request):
 		if 'xidh' in rquery:
 			xidh = rquery['xidh']
 			context = {'xid': xidh}
-			return aiohttp_jinja2.render_template('html/dashboard_view.html', request, context)
+			return aiohttp_jinja2.render_template('dashboard_view.html', request, context)
 		dashboards = await pgconn.fetch(f'select xid, name from dashboard', timeout=4)
 		dashboards = [dict(x) for x in dashboards]
 		context = {'dashboards': dashboards}
-		resp = aiohttp_jinja2.render_template('html/dashboard.html', request, context)
+		resp = aiohttp_jinja2.render_template('dashboard.html', request, context)
 		return resp

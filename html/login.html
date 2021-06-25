@@ -1,0 +1,23 @@
+{% include "header.html" %}
+</head>
+<body>
+
+
+<form name="login" action="login" method="post">
+<ul>
+	<li class="formrow">
+		<label for="name">name:</label>
+		<input id="name" type="text" name="name" value="" required/>
+	</li>
+	<li class="formrow">
+		<label for="password">password:</label>
+		<input id="password" type="password" name="password" value=""
+			minlength=8 maxlength=64 required/>
+	</li>
+</ul>
+<br/>
+<input type="submit" value="login">
+</form>
+
+</body>
+</html>

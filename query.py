@@ -64,6 +64,7 @@ async def query(request):
 		xconnection_names = XCONNECTION_IDS.copy() + [x[1] + '-' + x[0][:4] for x in cdata]
 		xconnection_labels = [*zip(xconnection_ids, xconnection_names)]
 		context = {
+			'query_page_id': 'wip',
 			'queries': queries,
 			'xconnection_labels': xconnection_labels,
 		}

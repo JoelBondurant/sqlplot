@@ -15,7 +15,9 @@ import uvloop
 import connection
 import dashboard
 import home
+import login
 import query
+import signup
 import view
 import ws
 
@@ -30,7 +32,7 @@ async def app_factory(argv=[]):
 	)
 	logging.info('Distillery Started')
 	logging.info(f'Python version: {sys.version}')
-	aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('./templates'))
+	aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('./html'))
 	app.add_routes([
 		web.get('/', home.home),
 		web.get('/connection', connection.connection),
@@ -44,6 +46,10 @@ async def app_factory(argv=[]):
 		web.static('/css/', './static/css/', show_index=False),
 		web.static('/data', '/data/distillery/query/', show_index=True),
 		web.get('/ws', ws.ws),
+		web.get('/login', login.login),
+		web.post('/login', login.login),
+		web.get('/signup', signup.signup),
+		web.post('/signup', signup.signup),
 	])
 	async with aiofiles.open('/secrets/distillery.json', 'r') as fin:
 		app['config'] = ujson.loads(await fin.read())

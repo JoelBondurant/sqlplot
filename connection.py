@@ -58,6 +58,6 @@ async def connection(request):
 				if 'password' in x['configuration']:
 					x['configuration']['password'] = '*****'
 		context = {'connections': connections}
-		resp = aiohttp_jinja2.render_template('html/connection.html', request, context)
+		resp = aiohttp_jinja2.render_template('connection.html', request, context)
 		return resp
 

@@ -1,4 +1,4 @@
-{% include "html/header.html" %}
+{% include "header.html" %}
 	<link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/editor/editor.main.css">
 <style>
 #main {
@@ -14,10 +14,10 @@
 <body>
 
 <div id="main"></div>
-<div id="container" style="width: 800px; height: 300px; border: 1px solid grey"
+<div id="container" style="width: 400px; height: 300px; border: 1px solid grey"
 onclick="
-	var queryText = window.editor.getValue();
-	document.getElementById('query_text').value = queryText;
+	var spec = window.editor.getValue();
+	document.getElementById('configuration').value = spec;
 "
 autofocus>
 <script>
@@ -29,7 +29,7 @@ autofocus>
 <script>
 	window.editor = monaco.editor.create(document.getElementById('container'), {
 		value: '',
-		language: 'sql',
+		language: 'json',
 		scrollbar: {
 			vertical: 'auto',
 			horizontal: 'auto'
@@ -40,67 +40,54 @@ autofocus>
 </script>
 
 <script>
-async function getStatus(xid) {
-	var ws = new WebSocket('ws://127.0.0.1:8080/ws');
-	ws.onmessage = (msg) => {
-		console.log(msg);
-	}
-	ws.onopen = () => ws.send('status:'+xid);
-}
-</script>
-<script>
 async function selectionChanged() {
 	var sel = document.getElementById('selection');
 	var xid = sel.value;
-	var queryText = "";
-	var xconnectionId = "";
+	var config = "";
+	var type = "";
 	if (xid.length == 32) {
-		var queryJson = await (await fetch('/query?xid=' + xid)).json();
-		queryText = queryJson['query_text'];
-		xconnectionId = queryJson['xconnection_id'];
+		var connJson = await (await fetch('/connection?xid=' + xid)).json();
+		config = connJson['configuration'];
+		type = connJson['type'];
 	}
 	document.getElementById('xid').value = xid;
-	document.getElementById('query_text').value = queryText;
-	document.getElementById('xconnection_id').value = xconnectionId;
+	document.getElementById('configuration').value = config;
+	document.getElementById('type').value = type;
 	var name = sel.options[sel.selectedIndex].text;
 	document.getElementById('name').value = name;
-	window.editor.setValue(queryText);
-	await getStatus(xid);
+	window.editor.setValue(config);
 }
 </script>
 
-<form name="new" action="query" method="post">
+<form name="new" action="connection" method="post">
 <ul>
 	<li class="formrow">
-		<label for="name">Name:</label>
+		<label for="name">name:</label>
 		<input id="name" type="text" name="name" value="" required/>
 	</li>
 	<li class="formrow">
-		<label for="xconnection_id">Connection:</label>
-		<select id="xconnection_id" name="xconnection_id">
-			{% for xconnection_label in xconnection_labels: %}
-			<option value="{{ xconnection_label[0] }}">{{ xconnection_label[1] }}</option>
-			{% endfor %}
+		<label for="type">type:</label>
+		<select id="type" name="type">
+			<option value="PostgreSQL">PostgreSQL</option>
+			<option value="MySQL">MySQL</option>
 		</select>
 	</li>
 	<input type="hidden" id="xid" name="xid" value="">
-	<input type="hidden" id="query_text" name="query_text" value="">
+	<input type="hidden" id="configuration" name="configuration" value="">
 </ul>
 <br/>
 <input type="submit" value="+">
 </form>
 
-
 <form name="selection" action="">
-	<label for="selection">Queries:</label>
+	<label for="selection">Connections:</label>
 	<select name="selection" id="selection" onchange="selectionChanged();">
 		<option value="" selected></option>
-	{% for query in queries %}
-		<option value="{{ query['xid'] }}">{{ query['name'] }}</option>
+	{% for conn in connections %}
+		<option value="{{ conn['xid'] }}">{{ conn['name'] }}</option>
 	{% endfor %}
 	</select>
 </form>
-
 
 </body>
 </html>
