@@ -40,6 +40,15 @@ autofocus>
 </script>
 
 <script>
+async function getStatus(xid) {
+	var ws = new WebSocket('ws://127.0.0.1:8080/ws');
+	ws.onmessage = (msg) => {
+		console.log(msg);
+	}
+	ws.onopen = () => ws.send('status:'+xid);
+}
+</script>
+<script>
 async function selectionChanged() {
 	var sel = document.getElementById('selection');
 	var xid = sel.value;
@@ -56,6 +65,7 @@ async function selectionChanged() {
 	var name = sel.options[sel.selectedIndex].text;
 	document.getElementById('name').value = name;
 	window.editor.setValue(queryText);
+	await getStatus(xid);
 }
 </script>
 
@@ -92,11 +102,6 @@ async function selectionChanged() {
 </form>
 
 <script>
-function wsTest() {
-	var ws = new WebSocket('ws://127.0.0.1/ws');
-	ws.send('Test websocket message.');
-	ws.close();
-}
 </script>
 
 </body>
