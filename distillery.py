@@ -23,7 +23,11 @@ import ws
 async def app_factory(argv=[]):
 	uvloop.install()
 	app = web.Application()
-	logging.basicConfig(level=logging.DEBUG)
+	logging.basicConfig(
+		level=logging.DEBUG,
+		format='%(asctime)s %(levelname)-8s %(message)s',
+		datefmt='%Y-%m-%d %H:%M:%S'
+	)
 	logging.info('Distillery Started')
 	logging.info(f'Python version: {sys.version}')
 	aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('./templates'))
