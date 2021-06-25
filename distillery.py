@@ -51,8 +51,11 @@ async def app_factory(argv=[]):
 		command_timeout=10)
 	app['pg_pool'] = pg_pool
 	# Redis Pool:
-	redis_host = app['config']['redis']['host']
-	app['redis'] = await aioredis.create_redis_pool(f'redis://{redis_host}')
+	redis_config = app['config']['redis']
+	redis = await aioredis.create_redis_pool(
+		'redis://'+redis_config['host'],
+		password=redis_config['password'])
+	app['redis'] = redis
 	return app
 
 

@@ -62,8 +62,10 @@ async def main():
 		host=pg_config['host'],
 		command_timeout=10)
 	app['pg_pool'] = pg_pool
-	redis_connstr = f'redis://{config["redis"]["host"]}'
-	redis = await aioredis.create_redis_pool(redis_connstr)
+	redis_config = config['redis']
+	redis = await aioredis.create_redis_pool(
+		'redis://'+redis_config["host"],
+		password=redis_config['password'])
 	app['redis'] = redis
 	channel = (await redis.subscribe('query'))[0]
 	asyncio.get_running_loop().create_task(channel_reader(channel))
