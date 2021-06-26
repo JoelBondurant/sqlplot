@@ -10,6 +10,7 @@ import aiofiles.os
 import aiohttp
 import aioredis
 import asyncpg
+import jwt
 import ujson
 
 
@@ -39,6 +40,8 @@ async def process_event(event):
 				await aiofiles.os.rename(fn_hidden, fn)
 				logging.info(f'Ready: {fn}')
 	if event['event_type'] == 'user':
+		query_secret = app['config']['query_secret']
+		event['event']['querySession'] = jwt.decode(event['event']['querySession'], query_secret)
 		logging.info(event)
 
 
