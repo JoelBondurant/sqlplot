@@ -68,6 +68,6 @@ async def query(request):
 			'queries': queries,
 			'xconnection_labels': xconnection_labels,
 		}
-		resp = aiohttp_jinja2.render_template('html/query.html', request, context)
+		resp = aiohttp_jinja2.render_template('query.html', request, context)
 		return resp
 
