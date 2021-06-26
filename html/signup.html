@@ -32,10 +32,8 @@ async function deriveKey(akey) {
 async function signUp() {
 	var passwordField = document.getElementById('password');
 	var password = passwordField.value;
-	console.info('password: ' + password);
 	var derivedKey = await deriveKey(password);
 	var derivedPassword = (await crypto.subtle.exportKey('jwk', derivedKey))['k'];
-	console.info('derivedPassword: ' + derivedPassword);
 	passwordField.value = derivedPassword;
 	var name = document.getElementById('name').value;
 	var formData = {'name': name, 'password': derivedPassword};
