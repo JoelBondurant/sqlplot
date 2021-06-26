@@ -30,12 +30,18 @@ autofocus>
 	window.editor = monaco.editor.create(document.getElementById('container'), {
 		value: '',
 		language: 'sql',
+		fontSize: 16,
 		scrollbar: {
 			vertical: 'auto',
 			horizontal: 'auto'
 		},
 		theme: 'vs-dark',
 		automaticLayout: true,
+	});
+	document.addEventListener('keydown', (event) => {
+		if (event.shiftKey && event.key == 'Enter') {
+			console.log('triggered');
+		}
 	});
 </script>
 
@@ -65,7 +71,6 @@ async function selectionChanged() {
 	var name = sel.options[sel.selectedIndex].text;
 	document.getElementById('name').value = name;
 	window.editor.setValue(queryText);
-	await getStatus(xid);
 }
 </script>
 
