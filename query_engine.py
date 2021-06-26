@@ -38,6 +38,8 @@ async def process_event(event):
 					await aiofiles.os.remove(fn)
 				await aiofiles.os.rename(fn_hidden, fn)
 				logging.info(f'Ready: {fn}')
+	if event['event_type'] == 'user':
+		logging.info(event)
 
 
 async def channel_reader(channel):

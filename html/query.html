@@ -17,6 +17,13 @@
 	const querySession = '{{ query_session }}'.slice(6, -5);
 </script>
 
+<script>
+	const ws = new WebSocket('ws://127.0.0.1:8080/ws');
+	ws.onmessage = (msg) => {
+		console.log(msg);
+	}
+</script>
+
 <div id="main"></div>
 <div id="container" style="width: 800px; height: 300px; border: 1px solid grey"
 onclick="
@@ -44,20 +51,17 @@ autofocus>
 	});
 	document.addEventListener('keydown', (event) => {
 		if (event.shiftKey && event.key == 'Enter') {
-			console.log('triggered');
+			var event = {
+				'querySession': querySession,
+				'queryText': window.editor.getValue(),
+				'xconnectionId': document.getElementById('xconnection_id').value,
+				'requested': (new Date()).getTime()
+			}
+			ws.send(JSON.stringify(event));
 		}
 	});
 </script>
 
-<script>
-async function getStatus(xid) {
-	var ws = new WebSocket('ws://127.0.0.1:8080/ws');
-	ws.onmessage = (msg) => {
-		console.log(msg);
-	}
-	ws.onopen = () => ws.send('status:'+xid);
-}
-</script>
 <script>
 async function selectionChanged() {
 	var sel = document.getElementById('selection');
