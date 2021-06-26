@@ -19,11 +19,13 @@ async def login(request):
 		key = hashlib.pbkdf2_hmac('sha256', password.encode(), user['salt'].encode(), 10**5).hex()[:32]
 		if key == user['key']:
 			exp = datetime.datetime.utcnow() + datetime.timedelta(days=7)
-			token = jwt.encode({'xid': user['xid'], 'exp': exp}, request.app['config']['user_secret'])
+			user_session = jwt.encode({'xid': user['xid'], 'exp': exp}, request.app['config']['user_secret'])
+			query_session = jwt.encode({'xid': user['xid'], 'exp': exp}, request.app['config']['query_secret'])
 		else:
 			token = 'fail'
 		resp = aiohttp.web.HTTPFound('/')  # redirect done client side, not here.
-		resp.set_cookie('session', token, max_age=3600*24*7, httponly=True, samesite='Strict')
+		resp.set_cookie('user_session', user_session, max_age=3600*24*7, httponly=True, samesite='Strict')
+		resp.set_cookie('query_session', query_session, max_age=3600*24*7, httponly=True, samesite='Strict')
 		return resp
 	resp = aiohttp_jinja2.render_template('login.html', request, {})
 	return resp
