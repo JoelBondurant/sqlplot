@@ -50,7 +50,7 @@ onclick="
 	window.editor = monaco.editor.create(document.getElementById('container'), {
 		value: '',
 		language: 'json',
-		fontSize: 16,
+		fontSize: 14,
 		scrollbar: {
 			vertical: 'auto',
 			horizontal: 'auto'
@@ -86,7 +86,7 @@ async function selectionChanged() {
 		<input type="hidden" id="configuration" name="configuration" value="">
 	</ul>
 	<br/>
-	<input type="submit" value="+">
+	<input type="submit" value="save">
 </form>
 <form name="selection" action="">
 	<label for="selection">Views:</label>

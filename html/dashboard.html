@@ -57,7 +57,7 @@ async function bindView(vid, xvid, config={}) {
 	window.editor = monaco.editor.create(document.getElementById('editor'), {
 		value: '',
 		language: 'javascript',
-		fontSize: 16,
+		fontSize: 14,
 		scrollbar: {
 			vertical: 'auto',
 			horizontal: 'auto'
@@ -77,7 +77,7 @@ async function bindView(vid, xvid, config={}) {
 	<input type="hidden" id="configuration" name="configuration" value="">
 </ul>
 <br/>
-<input type="submit" value="+">
+<input type="submit" value="save">
 </form>
 
 <script>

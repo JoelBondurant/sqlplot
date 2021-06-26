@@ -30,7 +30,7 @@ autofocus>
 	window.editor = monaco.editor.create(document.getElementById('container'), {
 		value: '',
 		language: 'sql',
-		fontSize: 16,
+		fontSize: 14,
 		scrollbar: {
 			vertical: 'auto',
 			horizontal: 'auto'
@@ -92,7 +92,7 @@ async function selectionChanged() {
 	<input type="hidden" id="query_text" name="query_text" value="">
 </ul>
 <br/>
-<input type="submit" value="+">
+<input type="submit" value="save">
 </form>
 
 
