@@ -35,6 +35,10 @@ async def app_factory(argv=[]):
 	aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('./html'))
 	app.add_routes([
 		web.get('/', home.home),
+		web.get('/login', login.login),
+		web.post('/login', login.login),
+		web.get('/signup', signup.signup),
+		web.post('/signup', signup.signup),
 		web.get('/connection', connection.connection),
 		web.post('/connection', connection.connection),
 		web.get('/query', query.query),
@@ -46,10 +50,6 @@ async def app_factory(argv=[]):
 		web.static('/css/', './static/css/', show_index=False),
 		web.static('/data', '/data/distillery/query/', show_index=True),
 		web.get('/ws', ws.ws),
-		web.get('/login', login.login),
-		web.post('/login', login.login),
-		web.get('/signup', signup.signup),
-		web.post('/signup', signup.signup),
 	])
 	async with aiofiles.open('/secrets/distillery.json', 'r') as fin:
 		app['config'] = ujson.loads(await fin.read())
