@@ -38,6 +38,7 @@ async function signUp() {
 	var name = document.getElementById('name').value;
 	var formData = {'name': name, 'password': derivedPassword};
 	await fetch('/signup', {'method': 'POST', 'body': JSON.stringify(formData)});
+	window.location.assign('/login');
 }
 </script>
 

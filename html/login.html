@@ -1,5 +1,48 @@
 {% include "header.html" %}
 </head>
+
+<script>
+async function deriveKey(akey) {
+	akey = await crypto.subtle.importKey(
+		'raw',
+		(new TextEncoder()).encode(akey),
+		{
+			'name': 'PBKDF2',
+		},
+		false,
+		['deriveBits', 'deriveKey']
+	);
+	return await crypto.subtle.deriveKey(
+	{
+		'name': 'PBKDF2',
+		'salt': Uint8Array.from([79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94]),
+		'iterations': 7979,
+		'hash': 'SHA-512',
+	},
+	akey,
+	{
+		'name': 'AES-GCM',
+		'length': 256,
+	},
+	true,
+	['encrypt', 'decrypt']);
+}
+</script>
+
+<script>
+async function logIn() {
+	var passwordField = document.getElementById('password');
+	var password = passwordField.value;
+	var derivedKey = await deriveKey(password);
+	var derivedPassword = (await crypto.subtle.exportKey('jwk', derivedKey))['k'];
+	passwordField.value = derivedPassword;
+	var name = document.getElementById('name').value;
+	var formData = {'name': name, 'password': derivedPassword};
+	await fetch('/login', {'method': 'POST', 'body': JSON.stringify(formData)});
+	window.location.assign('/');
+}
+</script>
+
 <body>
 
 
@@ -16,7 +59,7 @@
 	</li>
 </ul>
 <br/>
-<input type="submit" value="login">
+<input type="button" value="login" onclick="logIn();">
 </form>
 
 </body>

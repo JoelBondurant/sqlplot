@@ -22,7 +22,7 @@ async def signup(request):
 			record = [xid, name, key, salt]
 			columns = ['xid', 'name', 'key', 'salt']
 			result = await pgconn.copy_records_to_table('user', records=[record], columns=columns)
-		resp = aiohttp.web.HTTPFound('/login')
+		resp = aiohttp.web.HTTPFound('/login')  # this redirect is done client side, not here.
 		return resp
 	resp = aiohttp_jinja2.render_template('signup.html', request, {})
 	return resp
