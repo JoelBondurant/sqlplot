@@ -114,6 +114,21 @@ async function selectionChanged() {
 	</select>
 </form>
 
+<div id="results">
+</div>
+<script>
+	const resultsSocket = new WebSocket('ws://127.0.0.1:8080/results_socket');
+	resultsSocket.onopen = () => {
+		var event = {
+			'type': 'results',
+			'query_session': querySession,
+		}
+		resultsSocket.send(JSON.stringify(event));
+	}
+	resultsSocket.onmessage = (msg) => {
+		console.log(msg);
+	}
+</script>
 
 </body>
 </html>

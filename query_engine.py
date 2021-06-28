@@ -42,8 +42,6 @@ async def process_event(event):
 			await aiofiles.os.rename(fn_hidden, fn)
 			logging.info(f'Ready: {fn}')
 	if event['event_type'] == 'user':
-		query_secret = app['config']['query_secret']
-		event['event']['query_session'] = jwt.decode(event['event']['query_session'], query_secret)
 		event = event['event']
 		logging.info(event)
 		user_xid = event['query_session']['xid']
@@ -77,6 +75,7 @@ async def process_event(event):
 				await aiofiles.os.remove(fn)
 			await aiofiles.os.rename(fn_hidden, fn)
 			logging.info(f'Ready: {fn}')
+			await app['redis'].publish_json(user_xid, {'status':'ready'})
 
 
 async def channel_reader(channel):

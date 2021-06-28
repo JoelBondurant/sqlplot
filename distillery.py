@@ -17,9 +17,10 @@ import dashboard
 import home
 import login
 import query
+import query_socket
+import results_socket
 import signup
 import view
-import query_socket
 
 
 async def app_factory(argv=[]):
@@ -50,6 +51,7 @@ async def app_factory(argv=[]):
 		web.static('/css/', './static/css/', show_index=False),
 		web.static('/data', '/data/distillery/query/', show_index=True),
 		web.get('/query_socket', query_socket.query_socket),
+		web.get('/results_socket', results_socket.results_socket),
 	])
 	async with aiofiles.open('/secrets/distillery.json', 'r') as fin:
 		app['config'] = ujson.loads(await fin.read())
