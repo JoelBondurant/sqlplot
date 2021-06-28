@@ -35,7 +35,6 @@ async def results_socket(request):
 			redis = request.app['redis']
 			channel = (await redis.subscribe(user_xid))[0]
 			asyncio.get_running_loop().create_task(channel_reader(channel, resp))
-			await resp.send_json({'test':'testing'})
 			startup = False
 			logging.info('Listening for results...')
 	return resp

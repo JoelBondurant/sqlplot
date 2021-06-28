@@ -19,8 +19,8 @@ async def login(request):
 		key = hashlib.pbkdf2_hmac('sha256', password.encode(), user['salt'].encode(), 10**5).hex()[:32]
 		if key == user['key']:
 			exp = datetime.datetime.utcnow() + datetime.timedelta(days=7)
-			user_session = jwt.encode({'xid': user['xid'], 'exp': exp}, request.app['config']['user_secret'])
-			query_session = jwt.encode({'xid': user['xid'], 'exp': exp}, request.app['config']['query_secret'])
+			user_session = jwt.encode({'xid': user['xid'], 'exp': exp}, request.app['config']['user_secret']).decode()
+			query_session = jwt.encode({'xid': user['xid'], 'exp': exp}, request.app['config']['query_secret']).decode()
 		else:
 			token = 'fail'
 		resp = aiohttp.web.HTTPFound('/')  # redirect done client side, not here.

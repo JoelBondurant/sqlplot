@@ -14,7 +14,7 @@
 <body>
 
 <script>
-	const querySession = '{{ query_session }}'.slice(6, -5);
+	const querySession = '{{ query_session }}';
 </script>
 
 <script>
@@ -126,7 +126,8 @@ async function selectionChanged() {
 		resultsSocket.send(JSON.stringify(event));
 	}
 	resultsSocket.onmessage = (msg) => {
-		console.log(msg);
+		var resultStatus = JSON.parse(msg.data)['status'];
+		console.log('Result status: ' + resultStatus);
 	}
 </script>
 
