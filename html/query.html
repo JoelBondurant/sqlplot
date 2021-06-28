@@ -18,8 +18,8 @@
 </script>
 
 <script>
-	const ws = new WebSocket('ws://127.0.0.1:8080/ws');
-	ws.onmessage = (msg) => {
+	const querySocket = new WebSocket('ws://127.0.0.1:8080/query_socket');
+	querySocket.onmessage = (msg) => {
 		console.log(msg);
 	}
 </script>
@@ -52,12 +52,12 @@ autofocus>
 	document.addEventListener('keydown', (event) => {
 		if (event.shiftKey && event.key == 'Enter') {
 			var event = {
-				'querySession': querySession,
-				'queryText': window.editor.getValue(),
-				'xconnectionId': document.getElementById('xconnection_id').value,
+				'query_session': querySession,
+				'query_text': window.editor.getValue(),
+				'connection_xid': document.getElementById('connection_xid').value,
 				'requested': (new Date()).getTime()
 			}
-			ws.send(JSON.stringify(event));
+			querySocket.send(JSON.stringify(event));
 		}
 	});
 </script>
@@ -71,11 +71,11 @@ async function selectionChanged() {
 	if (xid.length == 32) {
 		var queryJson = await (await fetch('/query?xid=' + xid)).json();
 		queryText = queryJson['query_text'];
-		xconnectionId = queryJson['xconnection_id'];
+		connectionXid = queryJson['connection_xid'];
 	}
 	document.getElementById('xid').value = xid;
 	document.getElementById('query_text').value = queryText;
-	document.getElementById('xconnection_id').value = xconnectionId;
+	document.getElementById('connection_xid').value = connectionXid;
 	var name = sel.options[sel.selectedIndex].text;
 	document.getElementById('name').value = name;
 	window.editor.setValue(queryText);
@@ -89,10 +89,10 @@ async function selectionChanged() {
 		<input id="name" type="text" name="name" value="" required/>
 	</li>
 	<li class="formrow">
-		<label for="xconnection_id">Connection:</label>
-		<select id="xconnection_id" name="xconnection_id">
-			{% for xconnection_label in xconnection_labels: %}
-			<option value="{{ xconnection_label[0] }}">{{ xconnection_label[1] }}</option>
+		<label for="connection_xid">Connection:</label>
+		<select id="connection_xid" name="connection_xid">
+			{% for connection_label in connection_labels: %}
+			<option value="{{ connection_label[0] }}">{{ connection_label[1] }}</option>
 			{% endfor %}
 		</select>
 	</li>

@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
 import asyncio
+import csv
 import logging
 import os
 import sys
 
+import aiocsv
 import aiofiles
 import aiofiles.os
 import aiohttp
@@ -20,29 +22,61 @@ app = {}
 async def process_event(event):
 	if event['event_type'] == 'new':
 		xid = event['xid']
+		query_info_sql = 'select * from query where xid = $1'
 		async with (app['pg_pool']).acquire(timeout=2) as pgconn:
-			query_info_sql = 'select * from query where xid = $1'
 			query_info = dict(await pgconn.fetchrow(query_info_sql, xid))
-			logging.debug(f'query_info: {query_info}')
-			xconnection_id = query_info['xconnection_id']
-			query_text = query_info['query_text']
-			file_ext = query_text.lower().split('.')[-1]
-			fn_hidden = f'/data/distillery/query/.{xid}.{file_ext}'
-			fn = f'/data/distillery/query/{xid}.{file_ext}'
-			if xconnection_id == 'HTTP':
-				async with aiohttp.ClientSession() as session:
-					async with session.get(query_text) as resp:
-						data = await resp.content.read()
-				async with aiofiles.open(fn_hidden, 'w') as fh:
-					await fh.write(data.decode())
-				if os.path.exists(fn):
-					await aiofiles.os.remove(fn)
-				await aiofiles.os.rename(fn_hidden, fn)
-				logging.info(f'Ready: {fn}')
+		logging.debug(f'query_info: {query_info}')
+		connection_xid = query_info['connection_xid']
+		query_text = query_info['query_text']
+		file_ext = query_text.lower().split('.')[-1]
+		fn_hidden = f'/data/distillery/query/.{xid}.{file_ext}'
+		fn = f'/data/distillery/query/{xid}.{file_ext}'
+		if connection_xid == 'HTTP':
+			async with aiohttp.ClientSession() as session:
+				async with session.get(query_text) as resp:
+					data = await resp.content.read()
+			async with aiofiles.open(fn_hidden, 'w') as fh:
+				await fh.write(data.decode())
+			if os.path.exists(fn):
+				await aiofiles.os.remove(fn)
+			await aiofiles.os.rename(fn_hidden, fn)
+			logging.info(f'Ready: {fn}')
 	if event['event_type'] == 'user':
 		query_secret = app['config']['query_secret']
-		event['event']['querySession'] = jwt.decode(event['event']['querySession'], query_secret)
+		event['event']['query_session'] = jwt.decode(event['event']['query_session'], query_secret)
+		event = event['event']
 		logging.info(event)
+		user_xid = event['query_session']['xid']
+		query_text = event['query_text']
+		connection_xid = event['connection_xid']
+		connection_info_sql = 'select * from connection where xid = $1'
+		async with (app['pg_pool']).acquire(timeout=2) as pgconn:
+			logging.debug(f'{connection_info_sql} {connection_xid}')
+			connection_info = (await pgconn.fetchrow(connection_info_sql, connection_xid))
+			logging.debug(connection_info)
+			connection_info = dict(connection_info)
+		connection_config = ujson.loads(connection_info['configuration'])
+		if connection_info['type'] == 'PostgreSQL':
+			pg = await asyncpg.connect(
+				user=connection_config['user'],
+				password=connection_config['password'],
+				database=connection_config['database'],
+				host=connection_config['host'],
+				command_timeout=10)
+			rs = await pg.fetch(query_text, timeout=20)
+			columns = [*rs[0].keys()]
+			data = [[*x.values()] for x in rs]
+			logging.debug(f'Query data: {columns}\n{data}')
+			fn_hidden = f'/data/distillery/query/.{user_xid}.csv'
+			fn = f'/data/distillery/query/{user_xid}.csv'
+			async with aiofiles.open(fn_hidden, mode='w', newline='') as fout:
+				writer = aiocsv.AsyncWriter(fout, dialect='unix')
+				await writer.writerow(columns)
+				await writer.writerows(data)
+			if os.path.exists(fn):
+				await aiofiles.os.remove(fn)
+			await aiofiles.os.rename(fn_hidden, fn)
+			logging.info(f'Ready: {fn}')
 
 
 async def channel_reader(channel):

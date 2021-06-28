@@ -7,11 +7,11 @@ import aiohttp_jinja2
 
 FORM_FIELDS = [
 	'name',
-	'xconnection_id',
+	'connection_xid',
 	'query_text',
 ]
 
-XCONNECTION_IDS = [
+CONNECTION_XIDS = [
 	'HTTP',
 ]
 
@@ -60,14 +60,14 @@ async def query(request):
 		queries = await pgconn.fetch(f'select {", ".join(columns)} from query', timeout=4)
 		queries = [dict(x) for x in queries]
 		cdata = await pgconn.fetch(f'select xid, name from connection', timeout=4)
-		xconnection_ids = XCONNECTION_IDS.copy() + [x[0] for x in cdata]
-		xconnection_names = XCONNECTION_IDS.copy() + [x[1] + '-' + x[0][:4] for x in cdata]
-		xconnection_labels = [*zip(xconnection_ids, xconnection_names)]
+		connection_xids = CONNECTION_XIDS.copy() + [x[0] for x in cdata]
+		connection_names = CONNECTION_XIDS.copy() + [x[1] + '-' + x[0][:4] for x in cdata]
+		connection_labels = [*zip(connection_xids, connection_names)]
 		query_session = request.cookies['query_session']
 		context = {
 			'query_session': query_session,
 			'queries': queries,
-			'xconnection_labels': xconnection_labels,
+			'connection_labels': connection_labels,
 		}
 		resp = aiohttp_jinja2.render_template('query.html', request, context)
 		return resp

@@ -5,8 +5,8 @@ import aiohttp
 import ujson
 
 
-async def ws(request):
-	logging.info('websocket hit')
+async def query_socket(request):
+	logging.info('Query socket opened.')
 	redis = request.app['redis']
 	resp = aiohttp.web.WebSocketResponse()
 	await resp.prepare(request)
