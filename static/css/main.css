@@ -22,3 +22,12 @@ a {
 }
 
 
+table {
+	border-collapse: collapse;
+	border: 2px white solid;
+}
+
+td {
+	border: 1px white solid;
+	padding: 5px;
+}

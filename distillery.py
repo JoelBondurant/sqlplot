@@ -48,8 +48,8 @@ async def app_factory(argv=[]):
 		web.post('/view', view.view),
 		web.get('/dashboard', dashboard.dashboard),
 		web.post('/dashboard', dashboard.dashboard),
-		web.static('/css/', './static/css/', show_index=False),
-		web.static('/data', '/data/distillery/query/', show_index=True),
+		web.static('/css/', './static/css/', show_index=False, append_version=True),
+		web.static('/data', '/data/distillery/query/', show_index=False, append_version=True),
 		web.get('/query_socket', query_socket.query_socket),
 		web.get('/results_socket', results_socket.results_socket),
 	])

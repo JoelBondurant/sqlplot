@@ -3,6 +3,7 @@ import secrets
 
 import aiohttp
 import aiohttp_jinja2
+import jwt
 
 
 FORM_FIELDS = [
@@ -64,10 +65,13 @@ async def query(request):
 		connection_names = CONNECTION_XIDS.copy() + [x[1] + '-' + x[0][:4] for x in cdata]
 		connection_labels = [*zip(connection_xids, connection_names)]
 		query_session = request.cookies['query_session']
+		query_secret = request.app['config']['query_secret']
+		session = jwt.decode(query_session, query_secret)
 		context = {
 			'query_session': query_session,
 			'queries': queries,
 			'connection_labels': connection_labels,
+			'user_xid': session['xid'],
 		}
 		resp = aiohttp_jinja2.render_template('query.html', request, context)
 		return resp
