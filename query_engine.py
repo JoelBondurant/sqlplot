@@ -50,18 +50,24 @@ async def process_event(event):
 		connection_info_sql = 'select * from connection where xid = $1'
 		async with (app['pg_pool']).acquire(timeout=2) as pgconn:
 			logging.debug(f'{connection_info_sql} {connection_xid}')
-			connection_info = (await pgconn.fetchrow(connection_info_sql, connection_xid))
-			logging.debug(connection_info)
-			connection_info = dict(connection_info)
+			try:
+				connection_info = (await pgconn.fetchrow(connection_info_sql, connection_xid))
+				logging.debug(connection_info)
+				connection_info = dict(connection_info)
+			except Exception as ex:
+				return
 		connection_config = ujson.loads(connection_info['configuration'])
 		if connection_info['type'] == 'PostgreSQL':
-			pg = await asyncpg.connect(
-				user=connection_config['user'],
-				password=connection_config['password'],
-				database=connection_config['database'],
-				host=connection_config['host'],
-				command_timeout=10)
-			rs = await pg.fetch(query_text, timeout=20)
+			try:
+				pg = await asyncpg.connect(
+					user=connection_config['user'],
+					password=connection_config['password'],
+					database=connection_config['database'],
+					host=connection_config['host'],
+					command_timeout=10)
+				rs = await pg.fetch(query_text, timeout=20)
+			except Exception as ex:
+				return
 			columns = [*rs[0].keys()]
 			data = [[*x.values()] for x in rs]
 			logging.debug(f'Query data: {columns}\n{data}')
