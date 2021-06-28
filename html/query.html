@@ -126,8 +126,9 @@ async function renderResults() {
 	
 	d3.select('#results').html('');
 	var table = d3.select('#results').append('table');
-	table.style("border-collapse", "collapse");
-	table.style("border", "2px black solid");
+	table.style("border-collapse", "collapse")
+		.style("border", "2px white solid")
+		.style("background-color", "#1e1e1e");
 
 	// headers
 	table.append("thead").append("tr")
@@ -138,7 +139,7 @@ async function renderResults() {
 		.style("border", "1px white solid")
 		.style("padding", "5px")
 		.style("color", "white")
-		.style("background-color", "black")
+		.style("background-color", "#1e1e1e")
 		.style("font-weight", "bold")
 		.style("text-transform", "uppercase");
 
@@ -156,7 +157,7 @@ async function renderResults() {
 			d3.select(this).style("background-color", "#32b241");
 		})
 		.on("mouseout", function(){
-			d3.select(this).style("background-color", "black");
+			d3.select(this).style("background-color", "#1e1e1e");
 		})
 		.text(function(d){return d;})
 		.style("font-size", "12px");

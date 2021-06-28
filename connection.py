@@ -3,7 +3,7 @@ import secrets
 
 import aiohttp
 import aiohttp_jinja2
-import ujson
+import orjson
 
 
 TYPES = {
@@ -54,7 +54,7 @@ async def connection(request):
 		connections = [dict(x) for x in connections]
 		for x in connections:
 			if len(x['configuration']) > 0:
-				x['configuration'] = ujson.loads(x['configuration'])
+				x['configuration'] = orjson.loads(x['configuration'])
 				if 'password' in x['configuration']:
 					x['configuration']['password'] = '*****'
 		context = {'connections': connections}

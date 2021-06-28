@@ -3,7 +3,7 @@ import logging
 
 import aiohttp
 import jwt
-import ujson
+import orjson
 
 
 async def query_socket(request):
@@ -12,7 +12,7 @@ async def query_socket(request):
 	resp = aiohttp.web.WebSocketResponse()
 	await resp.prepare(request)
 	async for msg in resp:
-		subevent = ujson.loads(msg[1])
+		subevent = orjson.loads(msg[1])
 		query_secret = request.app['config']['query_secret']
 		subevent['query_session'] = jwt.decode(subevent['query_session'], query_secret)
 		event = {'event_type': 'user', 'event': subevent}

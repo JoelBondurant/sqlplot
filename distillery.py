@@ -9,7 +9,7 @@ import aiohttp_jinja2
 import aioredis
 import asyncpg
 import jinja2
-import ujson
+import orjson
 import uvloop
 
 import connection
@@ -54,7 +54,7 @@ async def app_factory(argv=[]):
 		web.get('/results_socket', results_socket.results_socket),
 	])
 	async with aiofiles.open('/secrets/distillery.json', 'r') as fin:
-		app['config'] = ujson.loads(await fin.read())
+		app['config'] = orjson.loads(await fin.read())
 	# PostgreSQL Pool:
 	pg_config = app['config']['postgres']
 	pg_pool = await asyncpg.create_pool(

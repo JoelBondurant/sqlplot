@@ -13,7 +13,7 @@ import aiohttp
 import aioredis
 import asyncpg
 import jwt
-import ujson
+import orjson
 
 
 app = {}
@@ -56,7 +56,7 @@ async def process_event(event):
 				connection_info = dict(connection_info)
 			except Exception as ex:
 				return
-		connection_config = ujson.loads(connection_info['configuration'])
+		connection_config = orjson.loads(connection_info['configuration'])
 		if connection_info['type'] == 'PostgreSQL':
 			try:
 				pg = await asyncpg.connect(
@@ -86,7 +86,7 @@ async def process_event(event):
 
 async def channel_reader(channel):
 	async for msg in channel.iter():
-		event = ujson.loads(msg.decode())
+		event = orjson.loads(msg.decode())
 		logging.debug(f'Query Event: {event}')
 		await process_event(event)
 
@@ -96,7 +96,7 @@ async def main():
 	logging.info('Starting query engine')
 	logging.info(f'Python version: {sys.version}')
 	with open('/secrets/distillery.json', 'r') as fin:
-		config = ujson.load(fin)
+		config = orjson.loads(fin.read())
 	app['config'] = config
 	pg_config = config['postgres']
 	pg_pool = await asyncpg.create_pool(
