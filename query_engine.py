@@ -12,7 +12,6 @@ import aiofiles.os
 import aiohttp
 import aioredis
 import asyncpg
-import jwt
 import orjson
 
 

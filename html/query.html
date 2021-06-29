@@ -5,33 +5,39 @@
 #main {
 	display: flex;
 }
-#container {
+#query_pane {
 	flex-grow: 0;
 	flex-shrink: 0;
-	flex-basis: 200px;
+	flex-basis: 100%;
+	width: 100%;
+	height: 300px;
+	border: 1px solid #555;
+}
+#results_pane {
+	flex-grow: 0;
+	flex-shrink: 0;
+	flex-basis: 100%;
+	width: 100%;
+	height: 300px;
+	border: 1px solid #555;
 }
 </style>
 </head>
 <body>
 
-<script>
-	const querySession = '{{ query_session }}';
-</script>
-
+<div id="main" name="main"></div>
 <script>
 	const querySocket = new WebSocket('ws://127.0.0.1:8080/query_socket');
 	querySocket.onmessage = (msg) => {
 		console.log(msg);
 	}
 </script>
-
-<div id="main"></div>
-<div id="container" style="width: 800px; height: 300px; border: 1px solid grey"
+<div id="query_pane"
 onclick="
 	var queryText = window.editor.getValue();
 	document.getElementById('query_text').value = queryText;
-"
-autofocus>
+" autofocus>
+
 <script>
 	var require = {"paths":{"vs":"https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs"}};
 </script>
@@ -39,7 +45,7 @@ autofocus>
 <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/editor/editor.main.nls.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/editor/editor.main.js"></script>
 <script>
-	window.editor = monaco.editor.create(document.getElementById('container'), {
+	window.editor = monaco.editor.create(document.getElementById('query_pane'), {
 		value: '',
 		language: 'sql',
 		fontSize: 14,
@@ -50,6 +56,7 @@ autofocus>
 		theme: 'vs-dark',
 		automaticLayout: true,
 	});
+	const querySession = '{{ query_session }}';
 	document.addEventListener('keydown', (event) => {
 		if (event.shiftKey && event.key == 'Enter') {
 			var event = {
@@ -83,6 +90,7 @@ async function selectionChanged() {
 }
 </script>
 
+<br/>
 <form name="new" action="query" method="post">
 <ul>
 	<li class="formrow">
@@ -100,7 +108,6 @@ async function selectionChanged() {
 	<input type="hidden" id="xid" name="xid" value="">
 	<input type="hidden" id="query_text" name="query_text" value="">
 </ul>
-<br/>
 <input type="submit" value="save">
 </form>
 
@@ -115,22 +122,22 @@ async function selectionChanged() {
 	</select>
 </form>
 
+<br/>
 <hr/>
 
-<div id="results" name="results"></div>
+<div id="results_pane" name="results_pane"></div>
 <script>
 async function renderResults() {
 
 	var csvText = await d3.text('/data/{{ user_xid }}.csv');
 	var csv = d3.csvParseRows(csvText);
 	
-	d3.select('#results').html('');
-	var table = d3.select('#results').append('table');
+	d3.select('#results_pane').html('');
+	var table = d3.select('#results_pane').append('table');
 	table.style("border-collapse", "collapse")
 		.style("border", "2px white solid")
 		.style("background-color", "#1e1e1e");
 
-	// headers
 	table.append("thead").append("tr")
 		.selectAll("th")
 		.data(csv[0])
@@ -139,11 +146,10 @@ async function renderResults() {
 		.style("border", "1px white solid")
 		.style("padding", "5px")
 		.style("color", "white")
-		.style("background-color", "#1e1e1e")
+		.style("background-color", "#222")
 		.style("font-weight", "bold")
 		.style("text-transform", "uppercase");
 
-	// data
 	table.append("tbody")
 		.selectAll("tr").data(csv.slice(1))
 		.enter().append("tr")
@@ -154,10 +160,10 @@ async function renderResults() {
 		.style("color", "white")
 		.style("padding", "5px")
 		.on("mouseover", function(){
-			d3.select(this).style("background-color", "#32b241");
+			d3.select(this).style("background-color", "#444");
 		})
 		.on("mouseout", function(){
-			d3.select(this).style("background-color", "#1e1e1e");
+			d3.select(this).style("background-color", "#222");
 		})
 		.text(function(d){return d;})
 		.style("font-size", "12px");
@@ -166,17 +172,17 @@ async function renderResults() {
 </script>
 <script>
 	const resultsSocket = new WebSocket('ws://127.0.0.1:8080/results_socket');
-	resultsSocket.onopen = () => {
+	resultsSocket.onopen = async () => {
 		var event = {
 			'type': 'results',
 			'query_session': querySession,
 		}
 		resultsSocket.send(JSON.stringify(event));
 	}
-	resultsSocket.onmessage = (msg) => {
+	resultsSocket.onmessage = async (msg) => {
 		var resultStatus = JSON.parse(msg.data)['status'];
 		if (resultStatus == 'ready') {
-			renderResults();
+			await renderResults();
 		}
 	}
 </script>
