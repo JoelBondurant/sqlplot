@@ -10,7 +10,7 @@ html, body {
 }
 
 a {
-	color: #32b241;
+	color: #3b4;
 }
 
 input[type=button], input[type=submit] {
@@ -34,6 +34,35 @@ input[type=button]:active, input[type=submit]:active {
 	background-color: #3b4;
 	border: 2px solid black;
 	color: black;
+}
+input[type=text], input[type=password], select {
+	background-color: #333;
+	color: white;
+	font-size: 14px;
+}
+input[type=range] {
+	background: #333;
+}
+input[type=checkbox] {
+	background: #333;
+	background-color: #333;
+	cursor: pointer;
+	font-size: 14px;
+	height: 14px;
+	margin: 4px;
+	visibility: hidden;
+	width: 14px;
+}
+input[type=checkbox]:after {
+	border: 1px solid #3b4;
+	color: #3b4;
+	content: " ";
+	display: inline-block;
+	visibility: visible;
+}
+input[type=checkbox]:checked:after {
+	content: "\2714";
+	font-weight: bold;
 }
 
 .formrow {

@@ -12,15 +12,15 @@ import jinja2
 import orjson
 import uvloop
 
-import connection
-import dashboard
-import home
-import login
-import query
-import query_socket
-import results_socket
-import signup
-import view
+from routes import connection
+from routes import dashboard
+from routes import home
+from routes import login
+from routes import query
+from routes import query_socket
+from routes import results_socket
+from routes import signup
+from routes import view
 
 
 async def app_factory(argv=[]):
