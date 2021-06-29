@@ -1,24 +1,46 @@
 * {
-	margin: 1;
 	font-family: "Courier New";
+	margin: 1;
 }
 
 html, body {
-	height: 100%;
-	color: #ddd;
 	background-color: #060606;
+	color: #ddd;
+	height: 100%;
 }
 
 a {
-	color: #888;
+	color: #32b241;
+}
+
+input[type=button], input[type=submit] {
+	background-color: black;
+	border: 2px solid #3b4;
+	color: #3b4;
+	display: inline-block;
+	font-size: 16px;
+	font-weight: bold;
+	padding: 8px 16px;
+	text-align: center;
+	text-decoration: none;
+	transition-duration: 0.2s;
+}
+input[type=button]:hover, input[type=submit]:hover {
+	background-color: #333;
+	border: 2px solid #293;
+	color: #4c5;
+}
+input[type=button]:active, input[type=submit]:active {
+	background-color: #3b4;
+	border: 2px solid black;
+	color: black;
 }
 
 .formrow {
 	display: grid;
+	grid-template-columns: 1fr 1fr 1fr;
 	margin-bottom: 10px;
 	margin-left: 10px;
-	grid-template-columns: 1fr 1fr 1fr;
 	width: 90%;
 }
-
 

@@ -95,8 +95,8 @@ async def main():
 	logging.basicConfig(level=logging.DEBUG)
 	logging.info('Starting query engine')
 	logging.info(f'Python version: {sys.version}')
-	with open('/secrets/distillery.json', 'r') as fin:
-		config = orjson.loads(fin.read())
+	async with aiofiles.open('/secrets/distillery.json', 'r') as fin:
+		config = orjson.loads(await fin.read())
 	app['config'] = config
 	pg_config = config['postgres']
 	pg_pool = await asyncpg.create_pool(
