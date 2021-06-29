@@ -16,6 +16,7 @@ from routes import connection
 from routes import dashboard
 from routes import home
 from routes import login
+from routes import logout
 from routes import query
 from routes import query_socket
 from routes import results_socket
@@ -38,6 +39,7 @@ async def app_factory(argv=[]):
 		web.get('/', home.home),
 		web.get('/login', login.login),
 		web.post('/login', login.login),
+		web.get('/logout', logout.logout),
 		web.get('/signup', signup.signup),
 		web.post('/signup', signup.signup),
 		web.get('/connection', connection.connection),

@@ -4,6 +4,8 @@ import secrets
 import aiohttp
 import aiohttp_jinja2
 
+from routes import login
+
 
 FORM_FIELDS = [
 	'name',
@@ -16,6 +18,7 @@ def is_valid(form):
 
 
 async def dashboard(request):
+	user_session, user_xid = login.decode(request)
 	async with (request.app['pg_pool']).acquire(timeout=2) as pgconn:
 		if request.method == 'POST':
 			form = await request.post()

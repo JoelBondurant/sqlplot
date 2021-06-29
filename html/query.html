@@ -82,11 +82,14 @@ async function selectionChanged() {
 		connectionXid = queryJson['connection_xid'];
 	}
 	document.getElementById('xid').value = xid;
-	document.getElementById('query_text').value = queryText;
 	document.getElementById('connection_xid').value = connectionXid;
 	var name = sel.options[sel.selectedIndex].text;
 	document.getElementById('name').value = name;
-	window.editor.setValue(queryText);
+	if (queryText.length > 0) {
+		// don't clear text
+		document.getElementById('query_text').value = queryText;
+		window.editor.setValue(queryText);
+	}
 }
 </script>
 

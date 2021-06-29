@@ -67,6 +67,8 @@ async def process_event(event):
 				rs = await pg.fetch(query_text, timeout=20)
 			except Exception as ex:
 				return
+			if len(rs) == 0:
+				return
 			columns = [*rs[0].keys()]
 			data = [[*x.values()] for x in rs]
 			logging.debug(f'Query data: {columns}\n{data}')
