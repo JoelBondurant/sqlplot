@@ -3,7 +3,6 @@ import secrets
 
 import aiohttp
 import aiohttp_jinja2
-import jwt
 import orjson
 
 from routes import login
@@ -29,8 +28,7 @@ def is_valid(form):
 
 
 async def connection(request):
-	user_session, user_xid = login.decode(request)
-	query_session = login.decode_session(request, 'query_session')
+	user_session, user_xid = login.authenticate(request)
 	async with (request.app['pg_pool']).acquire(timeout=2) as pgconn:
 		columns = ['xid','user_xid'] + FORM_FIELDS.copy()
 		if request.method == 'POST':

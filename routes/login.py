@@ -7,7 +7,7 @@ import aiohttp_jinja2
 import jwt
 
 
-def decode(request):
+def authenticate(request):
 	try:
 		user_session_encoded = request.cookies['user_session']
 	except:
@@ -24,7 +24,7 @@ def decode(request):
 		raise aiohttp.web.HTTPFound('/logout')
 
 
-def decode_session(request, session_name):
+def session(request, session_name):
 	session_encoded = request.cookies[session_name]
 	session_key = request.app['config'][session_name]['key']
 	session = jwt.decode(session_encoded, session_key)

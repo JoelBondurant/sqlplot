@@ -18,7 +18,7 @@ def is_valid(form):
 
 
 async def dashboard(request):
-	user_session, user_xid = login.decode(request)
+	user_session, user_xid = login.authenticate(request)
 	async with (request.app['pg_pool']).acquire(timeout=2) as pgconn:
 		if request.method == 'POST':
 			form = await request.post()
