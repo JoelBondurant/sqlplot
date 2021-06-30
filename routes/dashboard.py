@@ -24,31 +24,31 @@ async def dashboard(request):
 			form = await request.post()
 			if is_valid(form):
 				if len(form['xid']) == 32:
-					xid = form['xid']
-					record = tuple([xid] + [form[k] for k in FORM_FIELDS])
 					logging.debug(f'Update dashboard: {record}')
 					await pgconn.execute('''
 						update dashboard
-						set name = $2, configuration = $3
-						where xid = $1;
-					''', xid, form['name'], form['configuration'])
+						set name = $3, configuration = $4, updated = timezone('utc', now())
+						where xid = $1 and user_xid = $2;
+					''', form['xid'], user_xid, form['name'], form['configuration'])
 				else:
 					xid = 'x' + secrets.token_hex(16)[1:]
-					record = tuple([xid] + [form[k] for k in FORM_FIELDS])
+					record = tuple([xid, user_xid] + [form[k] for k in FORM_FIELDS])
 					logging.debug(f'New dashboard: {record}')
-					columns = ['xid'] + FORM_FIELDS.copy()
+					columns = ['xid', 'user_xid'] + FORM_FIELDS.copy()
 					result = await pgconn.copy_records_to_table('dashboard', records=[record], columns=columns)
 				raise aiohttp.web.HTTPFound('/dashboard')
 		rquery = dict(request.query)
 		if 'xid' in rquery:
 			xid = rquery['xid']
-			config = await pgconn.fetchval(f'select configuration from dashboard where xid = $1', xid, timeout=4)
+			config = await pgconn.fetchval(f'''
+				select configuration from dashboard where xid = $1 and user_xid = $2
+				''', xid, user_xid, timeout=4)
 			return aiohttp.web.json_response(config)
 		if 'xidh' in rquery:
 			xidh = rquery['xidh']
 			context = {'xid': xidh}
 			return aiohttp_jinja2.render_template('dashboard_view.html', request, context)
-		dashboards = await pgconn.fetch(f'select xid, name from dashboard', timeout=4)
+		dashboards = await pgconn.fetch(f'select xid, name from dashboard where user_xid = $1', user_xid, timeout=4)
 		dashboards = [dict(x) for x in dashboards]
 		context = {'dashboards': dashboards}
 		resp = aiohttp_jinja2.render_template('dashboard.html', request, context)

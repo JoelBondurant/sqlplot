@@ -32,7 +32,7 @@ async def query(request):
 				if len(form['xid']) == 32:
 					await pgconn.execute('''
 						update query
-						set name = $3, query_text = $4
+						set name = $3, query_text = $4, updated = timezone('utc', now())
 						where xid = $1 and user_xid = $2;
 					''', form['xid'], user_xid, form['name'], form['query_text'])
 					event = {
@@ -66,7 +66,7 @@ async def query(request):
 		connection_xids = [x[0] for x in connection_data] + CONNECTION_XIDS.copy()
 		connection_names = [x[1] for x in connection_data] + CONNECTION_XIDS.copy()
 		connection_labels = [*zip(connection_xids, connection_names)]
-		query_session = login.session(request, 'query_session')
+		query_session = request.cookies['query_session']
 		context = {
 			'query_session': query_session,
 			'queries': queries,

@@ -35,12 +35,11 @@ async def connection(request):
 			form = await request.post()
 			if is_valid(form):
 				if len(form['xid']) == 32:
-					xid = form['xid']
 					await pgconn.execute('''
 						update connection
-						set name = $3, configuration = $4
+						set name = $3, configuration = $4, updated = timezone('utc', now())
 						where xid = $1 and user_xid = $2;
-					''', xid, user_xid, form['name'], form['configuration'])
+					''', form['xid'], user_xid, form['name'], form['configuration'])
 				else:
 					xid = 'x' + secrets.token_hex(16)[1:]
 					record = tuple([xid, user_xid] + [form[k] for k in FORM_FIELDS])

@@ -24,25 +24,25 @@ async def view(request):
 			form = await request.post()
 			if is_valid(form):
 				if len(form['xid']) == 32:
-					xid = form['xid']
-					record = tuple([xid] + [form[k] for k in FORM_FIELDS])
 					await pgconn.execute('''
 						update view
-						set name = $2, configuration = $3
-						where xid = $1;
-					''', xid, form['name'], form['configuration'])
+						set name = $3, configuration = $4, updated = timezone('utc', now())
+						where xid = $1 and user_xid = $2;
+					''', form['xid'], user_xid, form['name'], form['configuration'])
 				else:
 					xid = 'x' + secrets.token_hex(16)[1:]
-					record = tuple([xid] + [form[k] for k in FORM_FIELDS])
-					columns = ['xid'] + FORM_FIELDS.copy()
+					record = tuple([xid, user_xid] + [form[k] for k in FORM_FIELDS])
+					columns = ['xid', 'user_xid'] + FORM_FIELDS.copy()
 					result = await pgconn.copy_records_to_table('view', records=[record], columns=columns)
 				raise aiohttp.web.HTTPFound('/view')
 		rquery = dict(request.query)
 		if 'xid' in rquery:
 			xid = rquery['xid']
-			config = await pgconn.fetchval(f'select configuration from view where xid = $1', xid, timeout=4)
+			config = await pgconn.fetchval(f'''
+				select configuration from view where xid = $1 and user_xid = $2
+				''', xid, user_xid, timeout=4)
 			return aiohttp.web.json_response(config)
-		views = await pgconn.fetch(f'select xid, name from view', timeout=4)
+		views = await pgconn.fetch(f'select xid, name from view where user_xid = $1', user_xid, timeout=4)
 		views = [dict(x) for x in views]
 		context = {'views': views}
 		resp = aiohttp_jinja2.render_template('view.html', request, context)

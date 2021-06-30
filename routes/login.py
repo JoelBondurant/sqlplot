@@ -28,6 +28,7 @@ def session(request, session_name):
 	session_encoded = request.cookies[session_name]
 	session_key = request.app['config'][session_name]['key']
 	session = jwt.decode(session_encoded, session_key)
+	logging.debug(f'session decoding: {session}')
 	return session
 
 

@@ -1,4 +1,5 @@
 import asyncio
+import html
 import logging
 
 import aiohttp
@@ -26,8 +27,9 @@ async def results_socket(request):
 	async for msg in resp:
 		subevent = orjson.loads(msg[1])
 		logging.debug(f'Subevent: {subevent}')
-		query_secret = request.app['config']['query_secret']
-		subevent['query_session'] = jwt.decode(subevent['query_session'], query_secret)
+		query_session_key = request.app['config']['query_session']['key']
+		logging.warning(f'')
+		subevent['query_session'] = jwt.decode(subevent['query_session'], query_session_key)
 		event = {'event_type': 'user', 'event': subevent}
 		logging.debug(f'Event: {event}')
 		if startup:

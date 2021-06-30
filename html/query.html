@@ -25,6 +25,10 @@
 </head>
 <body>
 
+<script>
+	const querySession = '{{ query_session }}';
+</script>
+
 <div id="main" name="main"></div>
 <script>
 	const querySocket = new WebSocket('ws://127.0.0.1:8080/query_socket');
@@ -56,7 +60,6 @@ onclick="
 		theme: 'vs-dark',
 		automaticLayout: true,
 	});
-	const querySession = '{{ query_session }}';
 	document.addEventListener('keydown', (event) => {
 		if (event.shiftKey && event.key == 'Enter') {
 			var event = {
