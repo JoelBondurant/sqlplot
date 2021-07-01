@@ -2,93 +2,158 @@
 	<link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/editor/editor.main.css">
 <style>
 #main {
-	display: flex;
+	display: grid;
 }
-#container {
-	flex-grow: 0;
-	flex-shrink: 0;
-	flex-basis: 400px;
+#nav_panel {
+	width: 99%;
+	height: 30px;
+	border: 1px solid #555;
+}
+#configuration_panel {
+	width: 99%;
+	height: 300px;
+	border: 1px solid #555;
+}
+#control_panel {
+	width: 99%;
+	height: 30px;
+	border: 1px solid #555;
 }
 </style>
 </head>
 <body>
 
-<div id="main"></div>
-<div id="container" style="width: 800px; height: 300px; border: 1px solid grey"
-onclick="
-	var spec = window.editor.getValue();
-	document.getElementById('configuration').value = spec;
-"
-autofocus>
-<script>
-	var require = {"paths":{"vs":"https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs"}};
-</script>
-<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/loader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/editor/editor.main.nls.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/editor/editor.main.js"></script>
-<script>
-	window.editor = monaco.editor.create(document.getElementById('container'), {
-		value: '',
-		language: 'json',
-		fontSize: 14,
-		scrollbar: {
-			vertical: 'auto',
-			horizontal: 'auto'
-		},
-		theme: 'vs-dark',
-		automaticLayout: true,
-	});
-</script>
+<div id="main">
+	<div id="nav_panel">
+		<button onclick="window.location.assign('/')">home</button>
+		<button onclick="window.location.assign('/connection')">connection</button>
+		<button onclick="window.location.assign('/query')">query</button>
+		<button onclick="window.location.assign('/view')">view</button>
+		<button onclick="window.location.assign('/dashboard')">dashboard</button>
+	</div>
 
-<script>
-async function selectionChanged() {
-	var sel = document.getElementById('selection');
-	var xid = sel.value;
-	var config = "";
-	var type = "";
-	if (xid.length == 32) {
-		var connJson = await (await fetch('/connection?xid=' + xid)).json();
-		config = connJson['configuration'];
-		type = connJson['type'];
-	}
-	document.getElementById('xid').value = xid;
-	document.getElementById('configuration').value = config;
-	document.getElementById('type').value = type;
-	var name = sel.options[sel.selectedIndex].text;
-	document.getElementById('name').value = name;
-	window.editor.setValue(config);
-}
-</script>
+	<div id="configuration_panel" autofocus>
+		<script>
+			var require = {"paths":{"vs":"https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs"}};
+		</script>
+		<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/loader.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/editor/editor.main.nls.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/editor/editor.main.js"></script>
+		<script>
+			window.editor = monaco.editor.create(document.getElementById('configuration_panel'), {
+				value: '',
+				language: 'json',
+				fontSize: 14,
+				scrollbar: {
+					vertical: 'auto',
+					horizontal: 'auto'
+				},
+				theme: 'vs-dark',
+				automaticLayout: true,
+			});
+		</script>
 
-<form name="new" action="connection" method="post">
-<ul>
-	<li class="formrow">
-		<label for="name">name:</label>
-		<input id="name" type="text" name="name" value="" required/>
-	</li>
-	<li class="formrow">
-		<label for="type">type:</label>
-		<select id="type" name="type">
-			<option value="PostgreSQL">PostgreSQL</option>
-			<option value="MySQL">MySQL</option>
-		</select>
-	</li>
-	<input type="hidden" id="xid" name="xid" value="">
-	<input type="hidden" id="configuration" name="configuration" value="">
-</ul>
-<br/>
-<input type="submit" value="save">
-</form>
+	</div>
 
-<form name="selection" action="">
-	<label for="selection">Connections:</label>
-	<select name="selection" id="selection" onchange="selectionChanged();">
-		<option value="" selected></option>
-	{% for conn in connections %}
-		<option value="{{ conn['xid'] }}">{{ conn['name'] }}</option>
-	{% endfor %}
-	</select>
-</form>
+	<div id="control_panel">
+
+		<script>
+			async function savedSelectionChanged() {
+				var sel = document.getElementById('saved_selection');
+				var xid = sel.value;
+				var config = "";
+				var type = "";
+				if (xid.length == 32) {
+					var connJson = await (await fetch('/connection?xid=' + xid)).json();
+					config = connJson['configuration'];
+					type = connJson['type'];
+				}
+				document.getElementById('xid').value = xid;
+				document.getElementById('type').value = type;
+				var name = sel.options[sel.selectedIndex].text;
+				document.getElementById('name').value = name;
+				window.editor.setValue(config);
+			}
+		</script>
+
+		<script>
+			async function saveConnection() {
+				var xid = document.getElementById('xid').value;
+				var configuration = window.editor.getValue();
+				var type = document.getElementById('type').value;
+				var name = document.getElementById('name').value;
+				if (xid.length == 0) {
+					var eventType = 'new';
+				} else {
+					var eventType = 'update';
+				}
+				var saveEvent = {
+					'event_type': eventType,
+					'xid': xid,
+					'configuration': configuration,
+					'name': name,
+					'type': type
+				};
+				var saveResp = await fetch('/connection', {
+					'method': 'POST',
+					'body': JSON.stringify(saveEvent),
+					'headers': {'Content-Type': 'application/json'}
+				});
+				if (eventType == 'new') {
+					responseEvent = await saveResp.json();
+					xid = responseEvent['xid'];
+					var sel = document.getElementById('saved_selection');
+					sel.add(new Option(name, xid));
+				}
+			}
+		</script>
+
+		<script>
+			async function deleteConnection() {
+				var xid = document.getElementById('xid').value;
+				if (xid.length != 32) {
+					return;
+				}
+				var deleteEvent = {
+					'event_type': 'delete',
+					'xid': xid
+				};
+				await fetch('/connection', {
+					'method': 'POST',
+					'body': JSON.stringify(deleteEvent),
+					'headers': {'Content-Type': 'application/json'}
+				});
+				var sel = document.getElementById('saved_selection');
+				sel.remove(sel.selectedIndex);
+				document.getElementById('xid').value = '';
+				document.getElementById('name').value = '';
+				window.editor.setValue('');
+			}
+		</script>
+
+
+		<form name="control_form" action="">
+			<label for="name">name:</label>
+			<input id="name" type="text" name="name" value="" required/>
+			<label for="type">type:</label>
+			<select id="type" name="type">
+				<option value="PostgreSQL">PostgreSQL</option>
+				<option value="MySQL">MySQL</option>
+			</select>
+			<input type="hidden" id="xid" name="xid" value="">
+			<input type="button" value="save" onclick="saveConnection();">
+			<input type="button" value="delete" onclick="deleteConnection();">
+			<label for="saved_selection">Saved Connections:</label>
+			<select name="saved_selection" id="saved_selection" onchange="savedSelectionChanged();">
+				<option value="" selected></option>
+			{% for conn in connections %}
+				<option value="{{ conn['xid'] }}">{{ conn['name'] }}</option>
+			{% endfor %}
+			</select>
+		</form>
+
+	</div>
+</div>
 
 </body>
 </html>

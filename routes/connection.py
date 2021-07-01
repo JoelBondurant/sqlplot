@@ -21,30 +21,30 @@ FORM_FIELDS = [
 ]
 
 
-def is_valid(form):
-	if form['type'] not in TYPES:
-		return False
-	return True
-
 
 async def connection(request):
 	user_session, user_xid = login.authenticate(request)
 	async with (request.app['pg_pool']).acquire(timeout=2) as pgconn:
 		columns = ['xid','user_xid'] + FORM_FIELDS.copy()
 		if request.method == 'POST':
-			form = await request.post()
-			if is_valid(form):
-				if len(form['xid']) == 32:
-					await pgconn.execute('''
-						update connection
-						set name = $3, configuration = $4, updated = timezone('utc', now())
-						where xid = $1 and user_xid = $2;
-					''', form['xid'], user_xid, form['name'], form['configuration'])
-				else:
-					xid = 'x' + secrets.token_hex(16)[1:]
-					record = tuple([xid, user_xid] + [form[k] for k in FORM_FIELDS])
-					result = await pgconn.copy_records_to_table('connection', records=[record], columns=columns)
-				raise aiohttp.web.HTTPFound('/connection')
+			event = await request.json()
+			logging.debug(f'Connection event posted: {event}')
+			if event['event_type'] == 'new':
+				xid = 'x' + secrets.token_hex(16)[1:]
+				record = tuple([xid, user_xid] + [event[k] for k in FORM_FIELDS])
+				result = await pgconn.copy_records_to_table('connection', records=[record], columns=columns)
+			elif event['event_type'] == 'update':
+				await pgconn.execute('''
+					update connection
+					set name = $3, configuration = $4, updated = timezone('utc', now())
+					where xid = $1 and user_xid = $2;
+				''', event['xid'], user_xid, event['name'], event['configuration'])
+			elif event['event_type'] == 'delete':
+				await pgconn.execute('''
+					delete from connection
+					where xid = $1 and user_xid = $2;
+				''', event['xid'], user_xid)
+			return aiohttp.web.json_response({'xid': xid})
 		rquery = dict(request.query)
 		if 'xid' in rquery:
 			xid = rquery['xid']

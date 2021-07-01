@@ -38,7 +38,10 @@ async function logIn() {
 	passwordField.value = derivedPassword;
 	var name = document.getElementById('name').value;
 	var formData = {'name': name, 'password': derivedPassword};
-	await fetch('/login', {'method': 'POST', 'body': JSON.stringify(formData)});
+	await fetch('/login', {
+		'method': 'POST',
+		'body': JSON.stringify(formData)},
+		'headers': {'Content-Type': 'application/json'});
 	window.location.assign('/');
 }
 </script>

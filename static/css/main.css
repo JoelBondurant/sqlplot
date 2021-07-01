@@ -11,10 +11,10 @@ html, body {
 }
 
 a {
-	color: #3b4;
+	color: #ccc;
 }
 
-input[type=button], input[type=submit] {
+button, input[type=button], input[type=submit] {
 	background-color: #333;
 	border: 1px solid #aaa;
 	color: #eee;
@@ -23,13 +23,13 @@ input[type=button], input[type=submit] {
 	text-align: center;
 	transition-duration: 0.4s;
 }
-input[type=button]:hover, input[type=submit]:hover {
+button:hover, input[type=button]:hover, input[type=submit]:hover {
 	background-color: #aaa;
 	border: 1px solid #aaa;
 	color: #111;
 }
-input[type=button]:active, input[type=submit]:active {
-	background-color: #ccc;
+button:active, input[type=button]:active, input[type=submit]:active {
+	background-color: #fff;
 	border: 1px solid #ccc;
 	color: black;
 }
@@ -62,13 +62,5 @@ input[type=checkbox]:after {
 input[type=checkbox]:checked:after {
 	content: "\2714";
 	font-weight: bold;
-}
-
-.formrow {
-	display: grid;
-	grid-template-columns: 1fr 1fr 1fr;
-	margin-bottom: 10px;
-	margin-left: 10px;
-	width: 90%;
 }
 
