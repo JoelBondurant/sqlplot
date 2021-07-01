@@ -37,7 +37,7 @@ async def query(request):
 					''', form['xid'], user_xid, form['name'], form['query_text'])
 					event = {
 						'event_type': 'update',
-						'xid': xid,
+						'xid': form['xid'],
 					}
 					redis.publish_json('query', event)
 				else:
