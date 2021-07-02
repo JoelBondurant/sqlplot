@@ -11,16 +11,13 @@ def authenticate(request):
 	try:
 		user_session_encoded = request.cookies['user_session']
 	except:
-		logging.debug('user session cookie missing forward to login.')
 		raise aiohttp.web.HTTPFound('/login')
 	try:
 		user_session_key = request.app['config']['user_session']['key']
 		user_session = jwt.decode(user_session_encoded, user_session_key)
 		user_xid = user_session['xid']
-		logging.debug('user session cookie decoded successfully.')
 		return [user_session, user_xid]
 	except:
-		logging.debug('user session cookie decode failure.')
 		raise aiohttp.web.HTTPFound('/logout')
 
 
@@ -28,7 +25,6 @@ def session(request, session_name):
 	session_encoded = request.cookies[session_name]
 	session_key = request.app['config'][session_name]['key']
 	session = jwt.decode(session_encoded, session_key)
-	logging.debug(f'session decoding: {session}')
 	return session
 
 

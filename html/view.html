@@ -7,12 +7,33 @@
 	<link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/editor/editor.main.css">
 <style>
 #main {
-	display: flex;
+	display: grid;
 }
-#container {
-	flex-grow: 0;
-	flex-shrink: 0;
-	flex-basis: 600px;
+#nav_panel {
+	width: 99%;
+	height: 30px;
+	border: 1px solid #555;
+}
+#wrapper {
+	display: grid;
+	grid-template-columns: 1fr 2fr;
+	height: calc(90vh);
+	width: calc(99vw);
+}
+#configuration_panel {
+	width: calc(40vw);
+	height: calc(88vh);
+	border: 1px solid #555;
+}
+#view_panel {
+	width: 1px;
+	height: 1px;
+	float: left;
+}
+#control_panel {
+	width: calc(99vw);
+	height: 30px;
+	border: 1px solid #555;
 }
 </style>
 
@@ -24,80 +45,85 @@
 </script>
 
 <div id="main">
-<div id="container" style="width: 800px; height: 600px; border: 1px solid grey"
-onclick="
-	var spec = window.editor.getValue();
-	document.getElementById('configuration').value = spec;
-	if (spec.length > 0) {
-		vegaEmbed('#vis', JSON.parse(spec), {actions:false, theme:'dark'});
-	} else {
-		document.getElementById('vis').innerHTML = '';
-	}
-"
- autofocus>
-</div>
 
-<div id="vis"></div>
-</div>
+	<div id="nav_panel">
+		<button onclick="window.location.assign('/')">home</button>
+		<button onclick="window.location.assign('/connection')">connection</button>
+		<button onclick="window.location.assign('/query')">query</button>
+		<button onclick="window.location.assign('/view')">view</button>
+		<button onclick="window.location.assign('/dashboard')">dashboard</button>
+	</div>
 
-<script>
-	var require = {"paths":{"vs":"https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs"}};
-</script>
-<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/loader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/editor/editor.main.nls.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/editor/editor.main.js"></script>
-<script>
-	window.editor = monaco.editor.create(document.getElementById('container'), {
-		value: '',
-		language: 'json',
-		fontSize: 14,
-		scrollbar: {
-			vertical: 'auto',
-			horizontal: 'auto'
-		},
-		theme: 'vs-dark',
-		automaticLayout: true,
-	});
-</script>
 
-<script>
-async function selectionChanged() {
-	var sel = document.getElementById('selection');
-	var xid = sel.value;
-	var spec = "";
-	if (xid.length == 32) {
-		spec = await (await fetch('/view?xid=' + xid)).json();
-	}
-	document.getElementById('xid').value = xid;
-	document.getElementById('configuration').value = spec;
-	var name = sel.options[sel.selectedIndex].text;
-	document.getElementById('name').value = name;
-	window.editor.setValue(spec);
-}
-</script>
+	<div id="wrapper">
+		<div id="configuration_panel"
+			onclick="
+				var configuration = window.editor.getValue();
+				document.getElementById('configuration').value = configuration;
+				if (configuration.length > 0) {
+					vegaEmbed('#view_panel', JSON.parse(configuration), {actions:false, theme:'dark'});
+				} else {
+					document.getElementById('view_panel').innerHTML = '';
+				}
+			"
+			autofocus>
+			<script>
+				var require = {"paths":{"vs":"https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs"}};
+			</script>
+			<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/loader.js"></script>
+			<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/editor/editor.main.nls.js"></script>
+			<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/editor/editor.main.js"></script>
+			<script>
+				window.editor = monaco.editor.create(document.getElementById('configuration_panel'), {
+					value: '',
+					language: 'json',
+					fontSize: 14,
+					scrollbar: {
+						vertical: 'auto',
+						horizontal: 'auto'
+					},
+					theme: 'vs-dark',
+					automaticLayout: true,
+				});
+			</script>
+		</div>
+		<div id="view_panel"></div>
+	</div>
 
-<form name="new" action="view" method="post">
-	<ul>
-		<li class="formrow">
+
+	<div id="control_panel">
+		<script>
+		async function selectionChanged() {
+			var sel = document.getElementById('selection');
+			var xid = sel.value;
+			var configuration = "";
+			if (xid.length == 32) {
+				configuration = await (await fetch('/view?xid=' + xid)).json();
+			}
+			document.getElementById('xid').value = xid;
+			document.getElementById('configuration').value = configuration;
+			var name = sel.options[sel.selectedIndex].text;
+			document.getElementById('name').value = name;
+			window.editor.setValue(configuration);
+		}
+		</script>
+
+		<form name="view_form" action="">
 			<label for="name">name:</label>
 			<input id="name" type="text" name="name" value="" required/>
-		</li>
-		<input type="hidden" id="xid" name="xid" value="">
-		<input type="hidden" id="configuration" name="configuration" value="">
-	</ul>
-	<br/>
-	<input type="submit" value="save">
-</form>
-<form name="selection" action="">
-	<label for="selection">Saved Views:</label>
-	<select name="selection" id="selection" onchange="selectionChanged();">
-		<option value="" selected></option>
-	{% for view in views %}
-		<option value="{{ view['xid'] }}">{{ view['name'] }}</option>
-	{% endfor %}
-	</select>
-</form>
-
+			<input type="hidden" id="xid" name="xid" value="">
+			<input type="hidden" id="configuration" name="configuration" value="">
+			<input type="submit" value="save">
+			<label for="selection">Saved Views:</label>
+			<select name="selection" id="selection" onchange="selectionChanged();">
+				<option value="" selected></option>
+				{% for view in views %}
+				<option value="{{ view['xid'] }}">{{ view['name'] }}</option>
+				{% endfor %}
+			</select>
+		</form>
+	</div>
+</div>
 
 </body>
 </html>
