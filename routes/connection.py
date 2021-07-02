@@ -31,6 +31,7 @@ async def connection(request):
 			logging.debug(f'Connection event posted: {event}')
 			if event['event_type'] == 'new':
 				xid = 'x' + secrets.token_hex(16)[1:]
+				event['xid'] = xid
 				record = tuple([xid, user_xid] + [event[k] for k in FORM_FIELDS])
 				result = await pgconn.copy_records_to_table('connection', records=[record], columns=columns)
 			elif event['event_type'] == 'update':
@@ -44,7 +45,7 @@ async def connection(request):
 					delete from connection
 					where xid = $1 and user_xid = $2;
 				''', event['xid'], user_xid)
-			return aiohttp.web.json_response({'xid': xid})
+			return aiohttp.web.json_response({'xid': event['xid']})
 		rquery = dict(request.query)
 		if 'xid' in rquery:
 			xid = rquery['xid']

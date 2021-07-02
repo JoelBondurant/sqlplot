@@ -26,12 +26,11 @@
 	border: 1px solid #555;
 }
 #view_panel {
-	width: 1px;
-	height: 1px;
+	padding: 1px;
 	float: left;
 }
 #control_panel {
-	width: calc(99vw);
+	width: calc(40vw);
 	height: 30px;
 	border: 1px solid #555;
 }
@@ -59,7 +58,6 @@
 		<div id="configuration_panel"
 			onclick="
 				var configuration = window.editor.getValue();
-				document.getElementById('configuration').value = configuration;
 				if (configuration.length > 0) {
 					vegaEmbed('#view_panel', JSON.parse(configuration), {actions:false, theme:'dark'});
 				} else {
@@ -93,29 +91,83 @@
 
 	<div id="control_panel">
 		<script>
-		async function selectionChanged() {
-			var sel = document.getElementById('selection');
+		async function savedSelectionChanged() {
+			var sel = document.getElementById('saved_selection');
 			var xid = sel.value;
 			var configuration = "";
 			if (xid.length == 32) {
 				configuration = await (await fetch('/view?xid=' + xid)).json();
 			}
 			document.getElementById('xid').value = xid;
-			document.getElementById('configuration').value = configuration;
 			var name = sel.options[sel.selectedIndex].text;
 			document.getElementById('name').value = name;
 			window.editor.setValue(configuration);
 		}
 		</script>
 
+		<script>
+			async function saveView() {
+				var xid = document.getElementById('xid').value;
+				var configuration = window.editor.getValue();
+				var name = document.getElementById('name').value;
+				if (xid.length == 0) {
+					var eventType = 'new';
+				} else {
+					var eventType = 'update';
+				}
+				var saveEvent = {
+					'event_type': eventType,
+					'xid': xid,
+					'name': name,
+					'configuration': configuration
+				};
+				var saveResp = await fetch('/view', {
+					'method': 'POST',
+					'body': JSON.stringify(saveEvent),
+					'headers': {'Content-Type': 'application/json'}
+				});
+				if (eventType == 'new') {
+					responseEvent = await saveResp.json();
+					xid = responseEvent['xid'];
+					var sel = document.getElementById('saved_selection');
+					sel.add(new Option(name, xid));
+					sel.selectedIndex = sel.length - 1;
+				}
+			}
+		</script>
+
+		<script>
+			async function deleteView() {
+				var xid = document.getElementById('xid').value;
+				if (xid.length != 32) {
+					return;
+				}
+				var deleteEvent = {
+					'event_type': 'delete',
+					'xid': xid
+				};
+				await fetch('/view', {
+					'method': 'POST',
+					'body': JSON.stringify(deleteEvent),
+					'headers': {'Content-Type': 'application/json'}
+				});
+				var sel = document.getElementById('saved_selection');
+				sel.remove(sel.selectedIndex);
+				document.getElementById('xid').value = '';
+				document.getElementById('name').value = '';
+				window.editor.setValue('');
+			}
+		</script>
+
+
 		<form name="view_form" action="">
 			<label for="name">name:</label>
-			<input id="name" type="text" name="name" value="" required/>
+			<input id="name" type="text" value="" required/>
 			<input type="hidden" id="xid" name="xid" value="">
-			<input type="hidden" id="configuration" name="configuration" value="">
-			<input type="submit" value="save">
-			<label for="selection">Saved Views:</label>
-			<select name="selection" id="selection" onchange="selectionChanged();">
+			<input type="button" value="save" onclick="saveView();">
+			<input type="button" value="delete" onclick="deleteView();">
+			<label for="saved_selection">Saved Views:</label>
+			<select id="saved_selection" onchange="savedSelectionChanged();">
 				<option value="" selected></option>
 				{% for view in views %}
 				<option value="{{ view['xid'] }}">{{ view['name'] }}</option>
