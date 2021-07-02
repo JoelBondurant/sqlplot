@@ -151,7 +151,7 @@
 			<input type="hidden" id="xid" name="xid" value="">
 			<input type="button" value="save" onclick="saveConnection();">
 			<input type="button" value="delete" onclick="deleteConnection();">
-			<label for="saved_selection">Saved Connections:</label>
+			<label for="saved_selection">connections:</label>
 			<select name="saved_selection" id="saved_selection" onchange="savedSelectionChanged();">
 				<option value="" selected></option>
 			{% for conn in connections %}

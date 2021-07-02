@@ -186,7 +186,7 @@ async function bindView(vid, xvid, config={}) {
 			<input type="hidden" id="xid" name="xid" value="">
 			<input type="button" value="save" onclick="saveDashboard();">
 			<input type="button" value="delete" onclick="deleteDashboard();">
-			<label for="saved_selection">Saved Dashboards:</label>
+			<label for="saved_selection">dashboards:</label>
 			<select id="saved_selection" onchange="savedSelectionChanged();">
 				<option value="" selected></option>
 				{% for dashboard in dashboards %}
