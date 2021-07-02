@@ -36,7 +36,7 @@ async function bindView(vid, xvid, config={}) {
 }
 #wrapper {
 	display: grid;
-	grid-template-columns: 1fr 2fr;
+	grid-template-columns: 1fr 1fr;
 	height: calc(90vh);
 	width: calc(99vw);
 }
@@ -44,6 +44,8 @@ async function bindView(vid, xvid, config={}) {
 	width: calc(40vw);
 	height: calc(88vh);
 	border: 1px solid #555;
+	resize: horizontal;
+	overflow: hidden;
 }
 #dashboard_panel {
 	padding: 1px;
@@ -92,6 +94,7 @@ async function bindView(vid, xvid, config={}) {
 					},
 					theme: 'vs-dark',
 					automaticLayout: true,
+					wordWrap: 'on'
 				});
 			</script>
 		</div>
