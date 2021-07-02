@@ -6,7 +6,7 @@
 	<script src="https://cdn.jsdelivr.net/npm/datalib@1.9.3"></script>
 <script>
 function dashboard() {
-	return document.getElementById('dashboard');
+	return document.getElementById('dashboard_panel');
 }
 function html(html) {
 	dashboard().innerHTML = html;
@@ -35,7 +35,7 @@ async function dashboardRenderGenerator() {
 </head>
 <body>
 <div id="main">
-	<div id="dashboard"></div>
+	<div id="dashboard_panel"></div>
 </div>
 <script>
 	dashboardRenderGenerator();

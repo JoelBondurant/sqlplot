@@ -3,11 +3,10 @@
 	<script src="https://cdn.jsdelivr.net/npm/vega@5.20.2"></script>
 	<script src="https://cdn.jsdelivr.net/npm/vega-lite@5.1.0"></script>
 	<script src="https://cdn.jsdelivr.net/npm/vega-embed@6.18.2"></script>
-	<script src="https://cdn.jsdelivr.net/npm/datalib@1.9.3"></script>
 	<link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/editor/editor.main.css">
 <script>
 function dashboard() {
-	return document.getElementById('dashboard');
+	return document.getElementById('dashboard_panel');
 }
 function html(html) {
 	dashboard().innerHTML = html;
@@ -19,91 +18,181 @@ async function bindView(vid, xvid, config={}) {
 	return vegaEmbed('#'+vid, spec, embedConfig);
 }
 </script>
-<script>
-	var require = {"paths":{"vs":"https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs"}};
-</script>
-<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/loader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/editor/editor.main.nls.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/editor/editor.main.js"></script>
 <style>
 #main {
-	display: flex;
+	display: grid;
 }
-#editor {
-	flex: 0 0 500px;
+#nav_panel {
+	width
+}i
+
+#main {
+	display: grid;
 }
-#dashboard {
-	flex: 1 1 auto;
+#nav_panel {
+	width: 99%;
+	height: 30px;
+	border: 1px solid #555;
+}
+#wrapper {
+	display: grid;
+	grid-template-columns: 1fr 2fr;
+	height: calc(90vh);
+	width: calc(99vw);
+}
+#configuration_panel {
+	width: calc(40vw);
+	height: calc(88vh);
+	border: 1px solid #555;
+}
+#dashboard_panel {
+	padding: 1px;
+	float: left;
+}
+#control_panel {
+	width: calc(40vw);
+	height: 30px;
+	border: 1px solid #555;
 }
 </style>
 </head>
 <body>
 <div id="main">
 
-	<div id="editor" style="width: 800px; height: 600px; border: 1px solid grey"
-	onclick="
-		var spec = window.editor.getValue();
-		document.getElementById('configuration').value = spec;
-		let specFunc = new Function('(async function(){'+spec+'})();');
-		specFunc();
-	"
-	 autofocus>
+	<div id="nav_panel">
+		<button onclick="window.location.assign('/')">home</button>
+		<button onclick="window.location.assign('/connection')">connection</button>
+		<button onclick="window.location.assign('/query')">query</button>
+		<button onclick="window.location.assign('/view')">view</button>
+		<button onclick="window.location.assign('/dashboard')">dashboard</button>
 	</div>
 
-	<div id="dashboard"></div>
+	<div id="wrapper">
+		<div id="configuration_panel"
+			onclick="
+				var configuration = window.editor.getValue();
+				let configurationFunc = new Function('(async function(){'+configuration+'})();');
+				configurationFunc();
+			"
+			 autofocus>
+			<script>
+				var require = {"paths":{"vs":"https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs"}};
+			</script>
+			<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/loader.js"></script>
+			<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/editor/editor.main.nls.js"></script>
+			<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/editor/editor.main.js"></script>
+			<script>
+				window.editor = monaco.editor.create(document.getElementById('configuration_panel'), {
+					value: '',
+					language: 'javascript',
+					fontSize: 14,
+					scrollbar: {
+						vertical: 'auto',
+						horizontal: 'auto'
+					},
+					theme: 'vs-dark',
+					automaticLayout: true,
+				});
+			</script>
+		</div>
+
+		<div id="dashboard_panel"></div>
+	</div>
+
+	<div id="control_panel">
+
+		<script>
+		async function savedSelectionChanged() {
+			var sel = document.getElementById('saved_selection');
+			var xid = sel.value;
+			var configuration = "";
+			if (xid.length == 32) {
+				configuration = await (await fetch('/dashboard?xid=' + xid)).json();
+			}
+			document.getElementById('xid').value = xid;
+			var name = sel.options[sel.selectedIndex].text;
+			document.getElementById('name').value = name;
+			window.editor.setValue(configuration);
+		}
+		</script>
+
+		<script>
+			async function saveDashboard() {
+				var xid = document.getElementById('xid').value;
+				var configuration = window.editor.getValue();
+				var name = document.getElementById('name').value;
+				if (xid.length == 0) {
+					var eventType = 'new';
+				} else {
+					var eventType = 'update';
+				}
+				var saveEvent = {
+					'event_type': eventType,
+					'xid': xid,
+					'name': name,
+					'configuration': configuration
+				};
+				var saveResp = await fetch('/dashboard', {
+					'method': 'POST',
+					'body': JSON.stringify(saveEvent),
+					'headers': {'Content-Type': 'application/json'}
+				});
+				if (eventType == 'new') {
+					responseEvent = await saveResp.json();
+					xid = responseEvent['xid'];
+					var sel = document.getElementById('saved_selection');
+					sel.add(new Option(name, xid));
+					sel.selectedIndex = sel.length - 1;
+				}
+				if (eventType == 'update') {
+					var sel = document.getElementById('saved_selection');
+					sel.remove(sel.selectedIndex);
+					sel.add(new Option(name, xid));
+					sel.selectedIndex = sel.length - 1;
+				}
+			}
+		</script>
+
+		<script>
+			async function deleteDashboard() {
+				var xid = document.getElementById('xid').value;
+				if (xid.length != 32) {
+					return;
+				}
+				var deleteEvent = {
+					'event_type': 'delete',
+					'xid': xid
+				};
+				await fetch('/dashboard', {
+					'method': 'POST',
+					'body': JSON.stringify(deleteEvent),
+					'headers': {'Content-Type': 'application/json'}
+				});
+				var sel = document.getElementById('saved_selection');
+				sel.remove(sel.selectedIndex);
+				document.getElementById('xid').value = '';
+				document.getElementById('name').value = '';
+				window.editor.setValue('');
+			}
+		</script>
+
+
+		<form name="dashboard_form" action="">
+			<label for="name">name:</label>
+			<input id="name" type="text" name="name" value="" required/>
+			<input type="hidden" id="xid" name="xid" value="">
+			<input type="button" value="save" onclick="saveDashboard();">
+			<input type="button" value="delete" onclick="deleteDashboard();">
+			<label for="saved_selection">Saved Dashboards:</label>
+			<select id="saved_selection" onchange="savedSelectionChanged();">
+				<option value="" selected></option>
+				{% for dashboard in dashboards %}
+				<option value="{{ dashboard['xid'] }}">{{ dashboard['name'] }}</option>
+				{% endfor %}
+			</select>
+		</form>
+	</div>
+
 </div>
-
-<script>
-	window.editor = monaco.editor.create(document.getElementById('editor'), {
-		value: '',
-		language: 'javascript',
-		fontSize: 14,
-		scrollbar: {
-			vertical: 'auto',
-			horizontal: 'auto'
-		},
-		theme: 'vs-dark',
-		automaticLayout: true,
-	});
-</script>
-
-<form name="new" action="dashboard" method="post">
-<ul>
-	<li class="formrow">
-		<label for="name">name:</label>
-		<input id="name" type="text" name="name" value="" required/>
-	</li>
-	<input type="hidden" id="xid" name="xid" value="">
-	<input type="hidden" id="configuration" name="configuration" value="">
-</ul>
-<br/>
-<input type="submit" value="save">
-</form>
-
-<script>
-async function selectionChanged() {
-	var sel = document.getElementById('selection');
-	var xid = sel.value;
-	var spec = "";
-	if (xid.length == 32) {
-		spec = await (await fetch('/dashboard?xid=' + xid)).json();
-	}
-	document.getElementById('xid').value = xid;
-	document.getElementById('configuration').value = spec;
-	var name = sel.options[sel.selectedIndex].text;
-	document.getElementById('name').value = name;
-	window.editor.setValue(spec);
-}
-</script>
-
-<form name="selection" action="">
-	<label for="selection">Saved Dashboards:</label>
-	<select name="selection" id="selection" onchange="selectionChanged();">
-		<option value="" selected></option>
-	{% for dashboard in dashboards %}
-		<option value="{{ dashboard['xid'] }}">{{ dashboard['name'] }}</option>
-	{% endfor %}
-	</select>
-</form>
 </body>
 </html>
