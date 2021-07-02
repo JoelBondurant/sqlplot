@@ -5,13 +5,23 @@
 #main {
 	display: grid;
 }
-#query_pane {
-	width: 100%;
+#nav_panel {
+	width: 99%;
+	height: 30px;
+	border: 1px solid #555;
+}
+#query_panel {
+	width: 99%;
 	height: 300px;
 	border: 1px solid #555;
 }
-#results_pane {
-	width: 100%;
+#control_panel {
+	width: 99%;
+	height: 30px;
+	border: 1px solid #555;
+}
+#results_panel {
+	width: 99%;
 	height: 300px;
 	border: 1px solid #555;
 }
@@ -22,164 +32,221 @@
 <script>
 	const querySession = '{{ query_session }}';
 </script>
-
-<div id="main" name="main"></div>
 <script>
 	const querySocket = new WebSocket('ws://127.0.0.1:8080/query_socket');
 	querySocket.onmessage = (msg) => {
 		console.log(msg);
 	}
 </script>
-<div id="query_pane"
-onclick="
-	var queryText = window.editor.getValue();
-	document.getElementById('query_text').value = queryText;
-" autofocus>
 
-<script>
-	var require = {"paths":{"vs":"https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs"}};
-</script>
-<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/loader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/editor/editor.main.nls.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/editor/editor.main.js"></script>
-<script>
-	window.editor = monaco.editor.create(document.getElementById('query_pane'), {
-		value: '',
-		language: 'sql',
-		fontSize: 14,
-		scrollbar: {
-			vertical: 'auto',
-			horizontal: 'auto'
-		},
-		theme: 'vs-dark',
-		automaticLayout: true,
-	});
-	document.addEventListener('keydown', (event) => {
-		if (event.shiftKey && event.key == 'Enter') {
-			var event = {
-				'query_session': querySession,
-				'query_text': window.editor.getValue(),
-				'connection_xid': document.getElementById('connection_xid').value,
-				'requested': (new Date()).getTime()
+<div id="main">
+
+	<div id="nav_panel">
+		<button onclick="window.location.assign('/')">home</button>
+		<button onclick="window.location.assign('/connection')">connection</button>
+		<button onclick="window.location.assign('/query')">query</button>
+		<button onclick="window.location.assign('/view')">view</button>
+		<button onclick="window.location.assign('/dashboard')">dashboard</button>
+	</div>
+
+
+	<div id="query_panel" autofocus>
+		<script>
+			var require = {"paths":{"vs":"https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs"}};
+		</script>
+		<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/loader.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/editor/editor.main.nls.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/editor/editor.main.js"></script>
+		<script>
+			window.editor = monaco.editor.create(document.getElementById('query_panel'), {
+				value: '',
+				language: 'sql',
+				fontSize: 14,
+				scrollbar: {
+					vertical: 'auto',
+					horizontal: 'auto'
+				},
+				theme: 'vs-dark',
+				automaticLayout: true,
+			});
+			document.addEventListener('keydown', (event) => {
+				if (event.shiftKey && event.key == 'Enter') {
+					var event = {
+						'query_session': querySession,
+						'query_text': window.editor.getValue(),
+						'connection_xid': document.getElementById('connection_xid').value,
+						'requested': (new Date()).getTime()
+					}
+					querySocket.send(JSON.stringify(event));
+				}
+			});
+		</script>
+	</div>
+
+
+	<div id="control_panel">
+		<script>
+			async function savedSelectionChanged() {
+				var sel = document.getElementById('saved_selection');
+				var xid = sel.value;
+				var queryText = "";
+				var xconnectionId = "";
+				if (xid.length == 32) {
+					var queryJson = await (await fetch('/query?xid=' + xid)).json();
+					queryText = queryJson['query_text'];
+					connectionXid = queryJson['connection_xid'];
+				}
+				document.getElementById('xid').value = xid;
+				document.getElementById('connection_xid').value = connectionXid;
+				var name = sel.options[sel.selectedIndex].text;
+				document.getElementById('name').value = name;
+				if (queryText.length > 0) {
+					// don't clear query wip
+					window.editor.setValue(queryText);
+				}
 			}
-			querySocket.send(JSON.stringify(event));
+		</script>
+
+		<script>
+			async function saveQuery() {
+				var xid = document.getElementById('xid').value;
+				var queryText = window.editor.getValue();
+				var connectionXid = document.getElementById('connection_xid').value;
+				var name = document.getElementById('name').value;
+				if (xid.length == 0) {
+					var eventType = 'new';
+				} else {
+					var eventType = 'update';
+				}
+				var saveEvent = {
+					'event_type': eventType,
+					'xid': xid,
+					'query_text': queryText,
+					'name': name,
+					'connection_xid': connectionXid
+				};
+				var saveResp = await fetch('/query', {
+					'method': 'POST',
+					'body': JSON.stringify(saveEvent),
+					'headers': {'Content-Type': 'application/json'}
+				});
+				if (eventType == 'new') {
+					responseEvent = await saveResp.json();
+					xid = responseEvent['xid'];
+					var sel = document.getElementById('saved_selection');
+					sel.add(new Option(name, xid));
+				}
+			}
+		</script>
+
+		<script>
+			async function deleteQuery() {
+				var xid = document.getElementById('xid').value;
+				if (xid.length != 32) {
+					return;
+				}
+				var deleteEvent = {
+					'event_type': 'delete',
+					'xid': xid
+				};
+				await fetch('/query', {
+					'method': 'POST',
+					'body': JSON.stringify(deleteEvent),
+					'headers': {'Content-Type': 'application/json'}
+				});
+				var sel = document.getElementById('saved_selection');
+				sel.remove(sel.selectedIndex);
+				document.getElementById('xid').value = '';
+				document.getElementById('name').value = '';
+				window.editor.setValue('');
+			}
+		</script>
+
+		<form name="query_form" action="">
+			<label for="name">Name:</label>
+			<input id="name" type="text" name="name" value="" required/>
+			<label for="connection_xid">Connection:</label>
+			<select id="connection_xid" name="connection_xid">
+				{% for connection_label in connection_labels: %}
+				<option value="{{ connection_label[0] }}">{{ connection_label[1] }}</option>
+				{% endfor %}
+			</select>
+			<input type="hidden" id="xid" name="xid" value="">
+			<input type="button" value="save" onclick="saveQuery();">
+			<input type="button" value="delete" onclick="deleteQuery();">
+			<label for="saved_selection">Saved Queries:</label>
+			<select id="saved_selection" onchange="savedSelectionChanged();">
+				<option value="" selected></option>
+				{% for query in queries %}
+				<option value="{{ query['xid'] }}">{{ query['name'] }}</option>
+				{% endfor %}
+			</select>
+		</form>
+	</div>
+
+	<div id="results_panel">
+		<script>
+		async function renderResults() {
+
+			var csvText = await d3.text('/data/{{ user_xid }}.csv');
+			var csv = d3.csvParseRows(csvText);
+			
+			d3.select('#results_panel').html('');
+			var table = d3.select('#results_panel').append('table');
+			table.style("border-collapse", "collapse")
+				.style("border", "2px white solid")
+				.style("background-color", "#1e1e1e");
+
+			table.append("thead").append("tr")
+				.selectAll("th")
+				.data(csv[0])
+				.enter().append("th")
+				.text(function(d) { return d; })
+				.style("border", "1px white solid")
+				.style("padding", "5px")
+				.style("color", "white")
+				.style("background-color", "#222")
+				.style("font-weight", "bold")
+				.style("text-transform", "uppercase");
+
+			table.append("tbody")
+				.selectAll("tr").data(csv.slice(1))
+				.enter().append("tr")
+				.selectAll("td")
+				.data(function(d){return d;})
+				.enter().append("td")
+				.style("border", "1px white solid")
+				.style("color", "white")
+				.style("padding", "5px")
+				.on("mouseover", function(){
+					d3.select(this).style("background-color", "#444");
+				})
+				.on("mouseout", function(){
+					d3.select(this).style("background-color", "#222");
+				})
+				.text(function(d){return d;})
+				.style("font-size", "12px");
+
 		}
-	});
-</script>
+		</script>
+		<script>
+			const resultsSocket = new WebSocket('ws://127.0.0.1:8080/results_socket');
+			resultsSocket.onopen = async () => {
+				var event = {
+					'type': 'results',
+					'query_session': querySession,
+				}
+				resultsSocket.send(JSON.stringify(event));
+			}
+			resultsSocket.onmessage = async (msg) => {
+				var resultStatus = JSON.parse(msg.data)['status'];
+				if (resultStatus == 'ready') {
+					await renderResults();
+				}
+			}
+		</script>
 
-<script>
-async function selectionChanged() {
-	var sel = document.getElementById('selection');
-	var xid = sel.value;
-	var queryText = "";
-	var xconnectionId = "";
-	if (xid.length == 32) {
-		var queryJson = await (await fetch('/query?xid=' + xid)).json();
-		queryText = queryJson['query_text'];
-		connectionXid = queryJson['connection_xid'];
-	}
-	document.getElementById('xid').value = xid;
-	document.getElementById('connection_xid').value = connectionXid;
-	var name = sel.options[sel.selectedIndex].text;
-	document.getElementById('name').value = name;
-	if (queryText.length > 0) {
-		// don't clear text
-		document.getElementById('query_text').value = queryText;
-		window.editor.setValue(queryText);
-	}
-}
-</script>
-
-<br/>
-<form name="new" action="query" method="post">
-		<label for="name">Name:</label>
-		<input id="name" type="text" name="name" value="" required/>
-		<label for="connection_xid">Connection:</label>
-		<select id="connection_xid" name="connection_xid">
-			{% for connection_label in connection_labels: %}
-			<option value="{{ connection_label[0] }}">{{ connection_label[1] }}</option>
-			{% endfor %}
-		</select>
-	<input type="hidden" id="xid" name="xid" value="">
-	<input type="hidden" id="query_text" name="query_text" value="">
-<input type="submit" value="save">
-</form>
-
-
-<form name="selection" action="">
-	<label for="selection">Saved Queries:</label>
-	<select name="selection" id="selection" onchange="selectionChanged();">
-		<option value="" selected></option>
-	{% for query in queries %}
-		<option value="{{ query['xid'] }}">{{ query['name'] }}</option>
-	{% endfor %}
-	</select>
-</form>
-
-<br/>
-<hr/>
-
-<div id="results_pane" name="results_pane"></div>
-<script>
-async function renderResults() {
-
-	var csvText = await d3.text('/data/{{ user_xid }}.csv');
-	var csv = d3.csvParseRows(csvText);
-	
-	d3.select('#results_pane').html('');
-	var table = d3.select('#results_pane').append('table');
-	table.style("border-collapse", "collapse")
-		.style("border", "2px white solid")
-		.style("background-color", "#1e1e1e");
-
-	table.append("thead").append("tr")
-		.selectAll("th")
-		.data(csv[0])
-		.enter().append("th")
-		.text(function(d) { return d; })
-		.style("border", "1px white solid")
-		.style("padding", "5px")
-		.style("color", "white")
-		.style("background-color", "#222")
-		.style("font-weight", "bold")
-		.style("text-transform", "uppercase");
-
-	table.append("tbody")
-		.selectAll("tr").data(csv.slice(1))
-		.enter().append("tr")
-		.selectAll("td")
-		.data(function(d){return d;})
-		.enter().append("td")
-		.style("border", "1px white solid")
-		.style("color", "white")
-		.style("padding", "5px")
-		.on("mouseover", function(){
-			d3.select(this).style("background-color", "#444");
-		})
-		.on("mouseout", function(){
-			d3.select(this).style("background-color", "#222");
-		})
-		.text(function(d){return d;})
-		.style("font-size", "12px");
-
-}
-</script>
-<script>
-	const resultsSocket = new WebSocket('ws://127.0.0.1:8080/results_socket');
-	resultsSocket.onopen = async () => {
-		var event = {
-			'type': 'results',
-			'query_session': querySession,
-		}
-		resultsSocket.send(JSON.stringify(event));
-	}
-	resultsSocket.onmessage = async (msg) => {
-		var resultStatus = JSON.parse(msg.data)['status'];
-		if (resultStatus == 'ready') {
-			await renderResults();
-		}
-	}
-</script>
-
+	</div>
+</div>
 </body>
 </html>

@@ -17,40 +17,41 @@ CONNECTION_XIDS = [
 	'HTTP',
 ]
 
-def is_valid(form):
-	return True
-
 
 async def query(request):
 	user_session, user_xid = login.authenticate(request)
 	async with (request.app['pg_pool']).acquire(timeout=2) as pgconn:
 		columns = ['xid', 'user_xid'] + FORM_FIELDS.copy()
 		if request.method == 'POST':
-			form = await request.post()
 			redis = request.app['redis']
-			if is_valid(form):
-				if len(form['xid']) == 32:
-					await pgconn.execute('''
-						update query
-						set name = $3, query_text = $4, updated = timezone('utc', now())
-						where xid = $1 and user_xid = $2;
-					''', form['xid'], user_xid, form['name'], form['query_text'])
-					event = {
-						'event_type': 'update',
-						'xid': form['xid'],
-					}
-					redis.publish_json('query', event)
-				else:
-					xid = 'x' + secrets.token_hex(16)[1:]
-					record = tuple([xid, user_xid] + [form[k] for k in FORM_FIELDS])
-					logging.debug(f'Record: {record}')
-					result = await pgconn.copy_records_to_table('query', records=[record], columns=columns)
-					event = {
-						'event_type': 'new',
-						'xid': xid,
-					}
-					redis.publish_json('query', event)
-				raise aiohttp.web.HTTPFound('/query')
+			event = await request.json()
+			logging.debug(f'Query event posted: {event}')
+			if event['event_type'] == 'new':
+				xid = 'x' + secrets.token_hex(16)[1:]
+				record = tuple([xid, user_xid] + [event[k] for k in FORM_FIELDS])
+				logging.debug(f'Record: {record}')
+				result = await pgconn.copy_records_to_table('query', records=[record], columns=columns)
+				event = {
+					'event_type': 'new',
+					'xid': xid,
+				}
+				redis.publish_json('query', event)
+			elif event['event_type'] == 'update':
+				await pgconn.execute('''
+					update query
+					set name = $3, query_text = $4, updated = timezone('utc', now())
+					where xid = $1 and user_xid = $2;
+				''', event['xid'], user_xid, event['name'], event['query_text'])
+				event = {
+					'event_type': 'update',
+					'xid': event['xid'],
+				}
+				redis.publish_json('query', event)
+			elif event['event_type'] == 'delete':
+				await pgconn.execute('''
+					delete from query where xid = $1 and user_xid = $2;
+				''', xid, user_xid)
+			return aiohttp.web.json_response({'xid': xid})
 		rquery = dict(request.query)
 		if 'xid' in rquery:
 			xid = rquery['xid']
