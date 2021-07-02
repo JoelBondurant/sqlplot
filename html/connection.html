@@ -106,6 +106,12 @@
 					sel.add(new Option(name, xid));
 					sel.selectedIndex = sel.length - 1;
 				}
+				if (eventType == 'update') {
+					var sel = document.getElementById('saved_selection');
+					sel.remove(sel.selectedIndex);
+					sel.add(new Option(name, xid));
+					sel.selectedIndex = sel.length - 1;
+				}
 			}
 		</script>
 
