@@ -49,11 +49,11 @@ async def connection(request):
 		if 'xid' in rquery:
 			xid = rquery['xid']
 			conn_json = dict(await pgconn.fetchrow(f'''
-				select {", ".join(columns)} from connection where xid = $1 and user_xid = $2
+				select {", ".join(columns)} from connection where xid = $1 and user_xid = $2 order by name
 			''', xid, user_xid, timeout=4))
 			return aiohttp.web.json_response(conn_json)
 		connections = await pgconn.fetch(f'''
-			select {", ".join(columns)} from connection where user_xid = $1
+			select {", ".join(columns)} from connection where user_xid = $1 order by name
 			''', user_xid, timeout=4)
 		connections = [dict(x) for x in connections]
 		for x in connections:

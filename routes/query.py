@@ -59,10 +59,12 @@ async def query(request):
 				select {", ".join(columns)} from query where xid = $1 and user_xid = $2
 			''', xid, user_xid, timeout=4))
 			return aiohttp.web.json_response(query_json)
-		queries = await pgconn.fetch(f'select {", ".join(columns)} from query', timeout=4)
+		queries = await pgconn.fetch(f'''
+			select {", ".join(columns)} from query order by name
+			''', timeout=4)
 		queries = [dict(x) for x in queries]
 		connection_data = await pgconn.fetch(f'''
-			select xid, name from connection where user_xid = $1
+			select xid, name from connection where user_xid = $1 order by 2
 			''', user_xid, timeout=4)
 		connection_xids = [x[0] for x in connection_data] + CONNECTION_XIDS.copy()
 		connection_names = [x[1] for x in connection_data] + CONNECTION_XIDS.copy()

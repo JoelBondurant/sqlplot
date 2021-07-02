@@ -104,6 +104,7 @@
 					xid = responseEvent['xid'];
 					var sel = document.getElementById('saved_selection');
 					sel.add(new Option(name, xid));
+					sel.selectedIndex = sel.length - 1;
 				}
 			}
 		</script>
