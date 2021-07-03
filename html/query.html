@@ -204,20 +204,19 @@
 			d3.select('#results_panel').html('');
 			var table = d3.select('#results_panel').append('table');
 			table.style("border-collapse", "collapse")
-				.style("border", "2px white solid")
-				.style("background-color", "#1e1e1e");
+				.style("border", "1px #aaa solid")
+				.style("background-color", "#222");
 
 			table.append("thead").append("tr")
 				.selectAll("th")
 				.data(csv[0])
 				.enter().append("th")
 				.text(function(d) { return d; })
-				.style("border", "1px white solid")
+				.style("border", "1px solid #888")
 				.style("padding", "5px")
 				.style("color", "white")
 				.style("background-color", "#222")
-				.style("font-weight", "bold")
-				.style("text-transform", "uppercase");
+				.style("font-weight", "bold");
 
 			table.append("tbody")
 				.selectAll("tr").data(csv.slice(1))
@@ -225,7 +224,7 @@
 				.selectAll("td")
 				.data(function(d){return d;})
 				.enter().append("td")
-				.style("border", "1px white solid")
+				.style("border", "1px solid #888")
 				.style("color", "white")
 				.style("padding", "5px")
 				.on("mouseover", function(){
