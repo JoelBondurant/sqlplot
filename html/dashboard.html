@@ -29,7 +29,7 @@ async function bindView(vid, xvid, config={}) {
 }
 #wrapper {
 	display: grid;
-	grid-template-columns: 1fr 1fr;
+	grid-template-columns: 1fr 7fr;
 	height: calc(90vh);
 	width: calc(99vw);
 }
@@ -42,7 +42,7 @@ async function bindView(vid, xvid, config={}) {
 }
 #dashboard_panel {
 	padding: 1px;
-	float: left;
+	float: center;
 }
 #control_panel {
 	width: calc(40vw);
@@ -171,7 +171,16 @@ async function bindView(vid, xvid, config={}) {
 				window.editor.setValue('');
 			}
 		</script>
-
+		
+		<script>
+			async function viewDashboard() {
+				var xid = document.getElementById('xid').value;
+				if (xid.length != 32) {
+					return;
+				}
+				window.location.assign('/dashboard?xidh=' + xid);
+			}
+		</script>
 
 		<form name="dashboard_form" action="">
 			<label for="name">name:</label>
@@ -186,6 +195,7 @@ async function bindView(vid, xvid, config={}) {
 				<option value="{{ dashboard['xid'] }}">{{ dashboard['name'] }}</option>
 				{% endfor %}
 			</select>
+			<input type="button" value="view" onclick="viewDashboard();">
 		</form>
 	</div>
 
