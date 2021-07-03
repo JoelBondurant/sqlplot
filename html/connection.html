@@ -154,9 +154,9 @@
 			<label for="saved_selection">connections:</label>
 			<select name="saved_selection" id="saved_selection" onchange="savedSelectionChanged();">
 				<option value="" selected></option>
-			{% for conn in connections %}
+				{% for conn in connections %}
 				<option value="{{ conn['xid'] }}">{{ conn['name'] }}</option>
-			{% endfor %}
+				{% endfor %}
 			</select>
 		</form>
 
