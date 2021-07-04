@@ -1,11 +1,29 @@
 {% include "header.html" %}
+<style>
+#nav_panel {
+	width: 99%;
+	height: 30px;
+	border: 1px solid #555;
+}
+</style>
 </head>
 <body>
 
-<center>
-<h3>Home</h3>
-<h1>Distillery Ad</h1>
-</center>
+<div id="main">
+	<div id="nav_panel">
+		<button onclick="window.location.assign('/')">home</button>
+		<button onclick="window.location.assign('/connection')">connection</button>
+		<button onclick="window.location.assign('/query')">query</button>
+		<button onclick="window.location.assign('/view')">view</button>
+		<button onclick="window.location.assign('/dashboard')">dashboard</button>
+	</div>
 
+	<div>
+		<center>
+		<h3>Home</h3>
+		<h1>Distillery Ad</h1>
+		</center>
+	</div>
+</div>
 </body>
 </html>
