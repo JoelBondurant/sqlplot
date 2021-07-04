@@ -16,6 +16,11 @@
 		<button onclick="window.location.assign('/query')">query</button>
 		<button onclick="window.location.assign('/view')">view</button>
 		<button onclick="window.location.assign('/dashboard')">dashboard</button>
+		{% if login %}
+			<button onclick="window.location.assign('/logout')">logout</button>
+		{% else %}
+			<button onclick="window.location.assign('/login')">login</button>
+		{% endif %}
 	</div>
 
 	<div>
