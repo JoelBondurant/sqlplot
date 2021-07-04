@@ -2,6 +2,21 @@
 	font-family: "Courier New";
 	font-size: 14px;
 	margin: 1;
+	scrollbar-width: thin;
+	scrollbar-color: #333;
+}
+
+*::-webkit-scrollbar {
+	width: 12px;
+}
+*::-webkit-scrollbar-track {
+	background: #333;
+}
+
+*::-webkit-scrollbar-thumb {
+	background-color: #666;
+	border-radius: 20px;
+	border: 1px solid #ccc;
 }
 
 html, body {
@@ -75,3 +90,5 @@ input[type=range]::-webkit-slider-thumb {
 input[type=range]::focus {
 	outline: none;
 }
+
+
