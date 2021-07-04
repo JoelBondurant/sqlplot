@@ -113,6 +113,9 @@
 				var xid = document.getElementById('xid').value;
 				var configuration = window.editor.getValue();
 				var name = document.getElementById('name').value;
+				if ((name.length < 4) || (name.length > 32)) {
+					return;
+				}
 				if (xid.length == 0) {
 					var eventType = 'new';
 				} else {
@@ -171,7 +174,7 @@
 
 		<form name="view_form" action="">
 			<label for="name">name:</label>
-			<input id="name" type="text" value="" required/>
+			<input id="name" type="text" value="" minlength="4" maxlength="32" required/>
 			<input type="hidden" id="xid" name="xid" value="">
 			<input type="button" value="save" onclick="saveView();">
 			<input type="button" value="delete" onclick="deleteView();">

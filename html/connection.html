@@ -83,6 +83,9 @@
 				var configuration = window.editor.getValue();
 				var type = document.getElementById('type').value;
 				var name = document.getElementById('name').value;
+				if ((name.length < 4) || (name.length > 32)) {
+					return;
+				}
 				if (xid.length == 0) {
 					var eventType = 'new';
 				} else {
@@ -142,7 +145,7 @@
 
 		<form name="control_form" action="">
 			<label for="name">name:</label>
-			<input id="name" type="text" name="name" value="" required/>
+			<input id="name" type="text" name="name" value="" minlength="4" maxlength="32" required/>
 			<label for="type">type:</label>
 			<select id="type" name="type">
 				<option value="PostgreSQL">PostgreSQL</option>
