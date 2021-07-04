@@ -1,6 +1,8 @@
 {% include "header.html" %}
 </head>
 
+<body>
+
 <script>
 async function deriveKey(akey) {
 	akey = await crypto.subtle.importKey(
@@ -40,30 +42,22 @@ async function logIn() {
 	var formData = {'name': name, 'password': derivedPassword};
 	await fetch('/login', {
 		'method': 'POST',
-		'body': JSON.stringify(formData)},
-		'headers': {'Content-Type': 'application/json'});
+		'body': JSON.stringify(formData),
+		'headers': {'Content-Type': 'application/json'}});
 	window.location.assign('/');
 }
 </script>
 
-<body>
 
 <center>
-<form name="login" action="login" method="post">
-<ul>
-	<li class="formrow">
-		<label for="name">name:</label>
-		<input id="name" type="text" name="name" value=""
-			minlength=4 maxlength=32 required/>
-	</li>
-	<li class="formrow">
-		<label for="password">password:</label>
-		<input id="password" type="password" name="password" value=""
-			minlength=8 maxlength=64 required/>
-	</li>
-</ul>
-<br/>
-<input type="button" value="login" onclick="logIn();">
+<form name="login" action="">
+	<label for="name">name:</label>
+	<input id="name" type="text" name="name" value=""
+		minlength=4 maxlength=32 required/>
+	<label for="password">password:</label>
+	<input id="password" type="password" name="password" value=""
+		minlength=8 maxlength=64 required/>
+	<input type="button" value="login" onclick="logIn();">
 </form>
 </center>
 
