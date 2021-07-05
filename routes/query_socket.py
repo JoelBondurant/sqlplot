@@ -13,7 +13,7 @@ async def query_socket(request):
 	await resp.prepare(request)
 	async for msg in resp:
 		subevent = orjson.loads(msg[1])
-		query_session_key = request.app['config']['query_session']['key']
+		query_session_key = request.app['config']['query']['session_key']
 		subevent['query_session'] = jwt.decode(subevent['query_session'], query_session_key)
 		event = {'event_type': 'user', 'event': subevent}
 		logging.debug(f'Query socket event: {event}')

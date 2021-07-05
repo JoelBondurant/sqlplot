@@ -12,6 +12,7 @@ import aiofiles.os
 import aiohttp
 import aioredis
 import asyncpg
+from cryptography.fernet import Fernet
 import orjson
 
 
@@ -55,7 +56,10 @@ async def process_event(event):
 				connection_info = dict(connection_info)
 			except Exception as ex:
 				return
-		connection_config = orjson.loads(connection_info['configuration'])
+		fernet = Fernet(app['config']['connection']['key'])
+		
+		connection_config = fernet.decrypt(connection_info['configuration'].encode()).decode()
+		connection_config = orjson.loads(connection_config)
 		if connection_info['type'] == 'PostgreSQL':
 			try:
 				pg = await asyncpg.connect(

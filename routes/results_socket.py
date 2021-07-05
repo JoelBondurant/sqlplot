@@ -27,7 +27,7 @@ async def results_socket(request):
 	async for msg in resp:
 		subevent = orjson.loads(msg[1])
 		logging.debug(f'Subevent: {subevent}')
-		query_session_key = request.app['config']['query_session']['key']
+		query_session_key = request.app['config']['query']['session_key']
 		logging.warning(f'')
 		subevent['query_session'] = jwt.decode(subevent['query_session'], query_session_key)
 		event = {'event_type': 'user', 'event': subevent}

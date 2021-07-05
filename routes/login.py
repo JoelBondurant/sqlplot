@@ -13,7 +13,7 @@ def authenticate(request):
 	except:
 		raise aiohttp.web.HTTPFound('/login')
 	try:
-		user_session_key = request.app['config']['user_session']['key']
+		user_session_key = request.app['config']['user']['session_key']
 		user_session = jwt.decode(user_session_encoded, user_session_key)
 		user_xid = user_session['xid']
 		return [user_session, user_xid]
@@ -42,9 +42,9 @@ async def login(request):
 		if key == user['key']:
 			exp = datetime.datetime.utcnow() + datetime.timedelta(days=7)
 			user_session = jwt.encode({'xid': user['xid'], 'exp': exp},
-				request.app['config']['user_session']['key']).decode()
+				request.app['config']['user']['session_key']).decode()
 			query_session = jwt.encode({'xid': user['xid'], 'exp': exp},
-				request.app['config']['query_session']['key']).decode()
+				request.app['config']['query']['session_key']).decode()
 			resp.set_cookie('user_session', user_session, max_age=3600*24*7, httponly=True, samesite='Strict')
 			resp.set_cookie('query_session', query_session, max_age=3600*24*7, httponly=True, samesite='Strict')
 		return resp

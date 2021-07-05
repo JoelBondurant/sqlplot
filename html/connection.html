@@ -70,7 +70,9 @@
 					type = connJson['type'];
 				}
 				document.getElementById('xid').value = xid;
-				document.getElementById('type').value = type;
+				if (type.length > 0) {
+					document.getElementById('type').value = type;
+				}
 				var name = sel.options[sel.selectedIndex].text;
 				document.getElementById('name').value = name;
 				window.editor.setValue(config);
@@ -83,6 +85,9 @@
 				var configuration = window.editor.getValue();
 				var type = document.getElementById('type').value;
 				var name = document.getElementById('name').value;
+				if (type.length == 0) {
+					return;
+				}
 				if ((name.length < 4) || (name.length > 32)) {
 					return;
 				}
@@ -147,7 +152,7 @@
 			<label for="name">name:</label>
 			<input id="name" type="text" name="name" value="" minlength="4" maxlength="32" required/>
 			<label for="type">type:</label>
-			<select id="type" name="type">
+			<select id="type" name="type" required>
 				<option value="PostgreSQL">PostgreSQL</option>
 				<option value="MySQL">MySQL</option>
 			</select>

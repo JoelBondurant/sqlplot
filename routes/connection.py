@@ -3,6 +3,7 @@ import secrets
 
 import aiohttp
 import aiohttp_jinja2
+from cryptography.fernet import Fernet
 import orjson
 
 from routes import login
@@ -21,14 +22,15 @@ FORM_FIELDS = [
 ]
 
 
-
 async def connection(request):
 	user_session, user_xid = login.authenticate(request)
+	fernet = Fernet(request.app['config']['connection']['key'])
 	async with (request.app['pg_pool']).acquire(timeout=2) as pgconn:
 		columns = ['xid','user_xid'] + FORM_FIELDS.copy()
 		if request.method == 'POST':
 			event = await request.json()
 			logging.debug(f'Connection event posted: {event}')
+			event['configuration'] = fernet.encrypt(event['configuration'].encode()).decode()
 			if event['event_type'] == 'new':
 				xid = 'x' + secrets.token_hex(16)[1:]
 				event['xid'] = xid
@@ -52,16 +54,12 @@ async def connection(request):
 			conn_json = dict(await pgconn.fetchrow(f'''
 				select {", ".join(columns)} from connection where xid = $1 and user_xid = $2 order by name
 			''', xid, user_xid, timeout=4))
+			conn_json['configuration'] = fernet.decrypt(conn_json['configuration'].encode()).decode()
 			return aiohttp.web.json_response(conn_json)
 		connections = await pgconn.fetch(f'''
-			select {", ".join(columns)} from connection where user_xid = $1 order by name
+			select xid, name from connection where user_xid = $1 order by name, xid
 			''', user_xid, timeout=4)
 		connections = [dict(x) for x in connections]
-		for x in connections:
-			if len(x['configuration']) > 0:
-				x['configuration'] = orjson.loads(x['configuration'])
-				if 'password' in x['configuration']:
-					x['configuration']['password'] = '*****'
 		context = {
 			'connections': connections,
 		}
