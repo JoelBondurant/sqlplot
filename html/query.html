@@ -175,6 +175,13 @@
 			}
 		</script>
 
+		<script>
+			async function copyXid() {
+				const xid = document.getElementById('xid').value;
+				navigator.clipboard.writeText(xid);
+			}
+		</script>
+
 		<form name="query_form" action="">
 			<label for="name">Name:</label>
 			<input id="name" type="text" name="name" value="" minlength="4" maxlength="32" required/>
@@ -194,6 +201,7 @@
 				<option value="{{ query['xid'] }}">{{ query['name'] }}</option>
 				{% endfor %}
 			</select>
+			<input type="button" value="xid" onclick="copyXid();">
 		</form>
 	</div>
 
