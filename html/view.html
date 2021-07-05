@@ -185,7 +185,7 @@
 			<input type="button" value="save" onclick="saveView();">
 			<input type="button" value="delete" onclick="deleteView();">
 			<label for="saved_selection">views:</label>
-			<select id="saved_selection" onchange="savedSelectionChanged();">
+			<select id="saved_selection" onclick="savedSelectionChanged();">
 				<option value="" selected></option>
 				{% for view in views %}
 				<option value="{{ view['xid'] }}">{{ view['name'] }}</option>

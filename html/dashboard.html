@@ -192,7 +192,7 @@ async function bindView(vid, xvid, config={}) {
 			<input type="button" value="save" onclick="saveDashboard();">
 			<input type="button" value="delete" onclick="deleteDashboard();">
 			<label for="saved_selection">dashboards:</label>
-			<select id="saved_selection" onchange="savedSelectionChanged();">
+			<select id="saved_selection" onclick="savedSelectionChanged();">
 				<option value="" selected></option>
 				{% for dashboard in dashboards %}
 				<option value="{{ dashboard['xid'] }}">{{ dashboard['name'] }}</option>

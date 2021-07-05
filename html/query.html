@@ -195,7 +195,7 @@
 			<input type="button" value="save" onclick="saveQuery();">
 			<input type="button" value="delete" onclick="deleteQuery();">
 			<label for="saved_selection">queries:</label>
-			<select id="saved_selection" onchange="savedSelectionChanged();">
+			<select id="saved_selection" onclick="savedSelectionChanged();">
 				<option value="" selected></option>
 				{% for query in queries %}
 				<option value="{{ query['xid'] }}">{{ query['name'] }}</option>
