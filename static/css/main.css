@@ -31,16 +31,16 @@ a {
 
 button, input[type=button], input[type=submit] {
 	background-color: #333;
-	border: 1px solid #aaa;
-	color: #eee;
+	border: 1px solid #888;
+	color: #ddd;
 	display: inline-block;
 	padding: 4px 12px;
 	text-align: center;
 	transition-duration: 0.4s;
 }
 button:hover, input[type=button]:hover, input[type=submit]:hover {
-	background-color: #aaa;
-	border: 1px solid #aaa;
+	background-color: #ddd;
+	border: 1px solid #888;
 	color: #111;
 }
 button:active, input[type=button]:active, input[type=submit]:active {
