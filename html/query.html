@@ -32,9 +32,6 @@
 <body>
 
 <script>
-	const querySession = '{{ query_session }}';
-</script>
-<script>
 	const querySocket = new WebSocket('ws://127.0.0.1:8080/query_socket');
 	querySocket.onmessage = (msg) => {
 		console.log(msg);
@@ -75,7 +72,6 @@
 			document.addEventListener('keydown', (event) => {
 				if (event.shiftKey && event.key == 'Enter') {
 					var event = {
-						'query_session': querySession,
 						'query_text': window.editor.getValue(),
 						'connection_xid': document.getElementById('connection_xid').value,
 						'requested': (new Date()).getTime()
@@ -251,13 +247,6 @@
 		</script>
 		<script>
 			const resultsSocket = new WebSocket('ws://127.0.0.1:8080/results_socket');
-			resultsSocket.onopen = async () => {
-				var event = {
-					'type': 'results',
-					'query_session': querySession,
-				}
-				resultsSocket.send(JSON.stringify(event));
-			}
 			resultsSocket.onmessage = async (msg) => {
 				var resultStatus = JSON.parse(msg.data)['status'];
 				if (resultStatus == 'ready') {

@@ -6,6 +6,7 @@ import aiohttp
 import jwt
 import orjson
 
+from routes import login
 
 
 async def process_event(event, resp):
@@ -21,23 +22,17 @@ async def channel_reader(channel, resp):
 
 async def results_socket(request):
 	logging.info('Results socket opened.')
-	startup = True
+	user_session, user_xid = login.authenticate(request)
+	redis = request.app['redis']
+	channel = (await redis.subscribe(user_xid))[0]
 	resp = aiohttp.web.WebSocketResponse(autoclose=False)
+	asyncio.get_running_loop().create_task(channel_reader(channel, resp))
 	await resp.prepare(request)
+	logging.info('Listening for results...')
 	async for msg in resp:
-		subevent = orjson.loads(msg[1])
-		logging.debug(f'Subevent: {subevent}')
-		query_session_key = request.app['config']['query']['session_key']
-		logging.warning(f'')
-		subevent['query_session'] = jwt.decode(subevent['query_session'], query_session_key)
-		event = {'event_type': 'user', 'event': subevent}
+		event = orjson.loads(msg[1])
+		event['user_xid'] = user_xid
+		event['event_type'] = 'user'
 		logging.debug(f'Event: {event}')
-		if startup:
-			user_xid = subevent['query_session']['xid']
-			redis = request.app['redis']
-			channel = (await redis.subscribe(user_xid))[0]
-			asyncio.get_running_loop().create_task(channel_reader(channel, resp))
-			startup = False
-			logging.info('Listening for results...')
 	return resp
 

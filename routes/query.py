@@ -70,9 +70,7 @@ async def query(request):
 		connection_xids = [x[0] for x in connection_data] + CONNECTION_XIDS.copy()
 		connection_names = [x[1] for x in connection_data] + CONNECTION_XIDS.copy()
 		connection_labels = [*zip(connection_xids, connection_names)]
-		query_session = request.cookies['query_session']
 		context = {
-			'query_session': query_session,
 			'queries': queries,
 			'connection_labels': connection_labels,
 			'user_xid': user_xid,

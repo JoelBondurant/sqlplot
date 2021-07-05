@@ -42,9 +42,8 @@ async def process_event(event):
 			await aiofiles.os.rename(fn_hidden, fn)
 			logging.info(f'Ready: {fn}')
 	if event['event_type'] == 'user':
-		event = event['event']
 		logging.info(event)
-		user_xid = event['query_session']['xid']
+		user_xid = event['user_xid']
 		query_text = event['query_text']
 		connection_xid = event['connection_xid']
 		connection_info_sql = 'select * from connection where xid = $1'
