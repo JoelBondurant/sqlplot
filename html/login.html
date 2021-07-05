@@ -33,12 +33,16 @@ async function deriveKey(akey) {
 
 <script>
 async function logIn() {
-	var passwordField = document.getElementById('password');
-	var password = passwordField.value;
+	var name = document.getElementById('name').value;
+	if ((name.length < 4) || (name.length > 32)) {
+		return;
+	}
+	var password = document.getElementById('password').value;
+	if ((password.length < 8) || (password.length > 64)) {
+		return;
+	}
 	var derivedKey = await deriveKey(password);
 	var derivedPassword = (await crypto.subtle.exportKey('jwk', derivedKey))['k'];
-	passwordField.value = derivedPassword;
-	var name = document.getElementById('name').value;
 	var formData = {'name': name, 'password': derivedPassword};
 	await fetch('/login', {
 		'method': 'POST',
@@ -48,18 +52,28 @@ async function logIn() {
 }
 </script>
 
+
 <center>
-<br/><br/><br/><br/>
-<form name="login" action="">
+<br/><br/>
+<form id="login_form" action="">
 	<label for="name">name:</label>
-	<input id="name" type="text" name="name" value=""
+	<input id="name" type="text" value=""
 		minlength=4 maxlength=32 required/>
 	<label for="password">password:</label>
-	<input id="password" type="password" name="password" value=""
+	<input id="password" type="password" value=""
 		minlength=8 maxlength=64 required/>
-	<input type="button" value="login" onclick="logIn();">
+	<input id="login" type="button" value="login" onclick="logIn();">
 </form>
 </center>
+
+
+<script>
+document.getElementById('password').addEventListener('keydown', async (event) => {
+	if (event.key == 'Enter') {
+		await logIn();
+	}
+});
+</script>
 
 </body>
 </html>
