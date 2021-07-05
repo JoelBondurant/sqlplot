@@ -171,6 +171,12 @@
 			}
 		</script>
 
+		<script>
+			async function copyXid() {
+				const xid = document.getElementById('xid').value;
+				navigator.clipboard.writeText(xid);
+			}
+		</script>
 
 		<form name="view_form" action="">
 			<label for="name">name:</label>
@@ -185,6 +191,7 @@
 				<option value="{{ view['xid'] }}">{{ view['name'] }}</option>
 				{% endfor %}
 			</select>
+			<input type="button" value="xid" onclick="copyXid();">
 		</form>
 	</div>
 </div>
