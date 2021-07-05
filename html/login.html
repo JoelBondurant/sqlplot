@@ -44,11 +44,17 @@ async function logIn() {
 	var derivedKey = await deriveKey(password);
 	var derivedPassword = (await crypto.subtle.exportKey('jwk', derivedKey))['k'];
 	var formData = {'name': name, 'password': derivedPassword};
-	await fetch('/login', {
+	var resp = await (await fetch('/login', {
 		'method': 'POST',
 		'body': JSON.stringify(formData),
-		'headers': {'Content-Type': 'application/json'}});
-	window.location.assign('/');
+		'headers': {'Content-Type': 'application/json'}})).json();
+	if (resp['status'] == 'success') {
+		window.location.assign('/');
+	}
+	else if (resp['status'] == 'fail') {
+		document.getElementById('name').value = '';
+		document.getElementById('password').value = '';
+	}
 }
 </script>
 

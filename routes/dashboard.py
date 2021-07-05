@@ -47,7 +47,9 @@ async def dashboard(request):
 			xidh = rquery['xidh']
 			context = {'xid': xidh}
 			return aiohttp_jinja2.render_template('dashboard_view.html', request, context)
-		dashboards = await pgconn.fetch(f'select xid, name from dashboard where user_xid = $1', user_xid, timeout=4)
+		dashboards = await pgconn.fetch(f'''
+			select xid, name from dashboard where user_xid = $1 order by name
+			''', user_xid, timeout=4)
 		dashboards = [dict(x) for x in dashboards]
 		context = {'dashboards': dashboards}
 		resp = aiohttp_jinja2.render_template('dashboard.html', request, context)
