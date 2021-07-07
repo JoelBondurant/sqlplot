@@ -23,6 +23,7 @@ html, body {
 	background-color: #111;
 	color: #ddd;
 	height: 100%;
+	overflow: hidden;
 }
 
 a {
@@ -47,6 +48,12 @@ button:active, input[type=button]:active, input[type=submit]:active {
 	background-color: #fff;
 	border: 1px solid #ccc;
 	color: black;
+}
+textarea {
+	background-color: #333;
+	color: white;
+	font-size: 14px;
+	padding: 4px 12px;
 }
 input[type=text], input[type=password], select {
 	background-color: #333;
