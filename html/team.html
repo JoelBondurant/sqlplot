@@ -4,47 +4,35 @@
 <body>
 
 <style>
-#team_form {
+form {
 	display: grid;
-	grid-template-columns: max-content 1fr;
+	grid-template-columns: auto 1fr;
 	grid-column-gap: 1em;
 	grid-row-gap: 1em;
 	margin: 1em;
 	width: 40em;
-}
-label {
-	display: contents;
-	grid-column: span 2;
 }
 </style>
 
 <br/><br/>
 <center>
 <form id="team_form" action="">
-	<label for="name">
-		<span>name:</span>
+		<label>name:</label>
 		<input id="name" type="text" value="" minlength=4 maxlength=32 required/>
-	</label>
-	<label for="members">
-		<span>members:</span>
+		<label>members:</label>
 		<textarea id='members' form="team_form" cols=32 rows=20 style="resize: vertical;"></textarea>
-	</label>
-	<label>
-		<span style="width=100%;"></span>
+		<div></div>
 		<div>
 			<input id="save" type="button" style="width: 6em;" value="save" onclick="saveTeam();">
 			<input id="delete" type="button" style="width: 6em;" value="delete" onclick="deleteTeam();">
 		</div>
-	</label>
-	<label for="saved_selection">
-		<span>teams:</span>
+		<label>teams:</label>
 		<select name="saved_selection" id="saved_selection" onclick="savedSelectionChanged();">
 			<option value="" selected></option>
 			{% for team in teams %}
 			<option value="{{ team['xid'] }}">{{ team['name'] }}</option>
 			{% endfor %}
 		</select>
-	</label>
 </form>
 </center>
 
