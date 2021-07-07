@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 import hashlib
 import logging
@@ -30,6 +31,7 @@ def session(request, session_name):
 
 async def login(request):
 	if request.method == 'POST':
+		await asyncio.sleep(0.2)
 		form = await request.json()
 		name = form['name']
 		password = form['password']

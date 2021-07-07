@@ -1,0 +1,28 @@
+{% include "header.html" %}
+</head>
+
+<body>
+
+
+<center>
+<br/><br/>
+<form id="team_form" action="">
+	<label for="name">name:</label>
+	<input id="name" type="text" value=""
+		minlength=4 maxlength=32 required/>
+	<label for="members">members:</label>
+	<input id="members" type="textarea" value="" minlength=4 required/>
+	<label for="saved_selection">teams:</label>
+	<select name="saved_selection" id="saved_selection" onclick="savedSelectionChanged();">
+		<option value="" selected></option>
+		{% for team in teams %}
+		<option value="{{ team['xid'] }}">{{ team['name'] }}</option>
+		{% endfor %}
+	</select>
+	<input id="save" type="button" value="save" onclick="saveTeam();">
+</form>
+</center>
+
+
+</body>
+</html>

@@ -21,6 +21,7 @@ from routes import query
 from routes import query_socket
 from routes import results_socket
 from routes import signup
+from routes import team
 from routes import view
 
 
@@ -48,6 +49,8 @@ async def app_factory(argv=[]):
 		web.post('/query', query.query),
 		web.get('/view', view.view),
 		web.post('/view', view.view),
+		web.get('/team', team.team),
+		web.post('/team', team.team),
 		web.get('/dashboard', dashboard.dashboard),
 		web.post('/dashboard', dashboard.dashboard),
 		web.static('/css/', './static/css/', show_index=False, append_version=True),
