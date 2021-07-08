@@ -7,9 +7,9 @@
 async function savedSelectionChanged() {
 	var sel = document.getElementById('saved_selection');
 	var xid = sel.value;
-	var configuration = "";
 	if (xid.length == 32) {
 		var team = await (await fetch('/team?xid=' + xid)).json();
+		team['members'] = team['members'].join('\n');
 	} else {
 		var team = {'members': ''};
 	}

@@ -20,6 +20,9 @@ async def team(request):
 				event['xid'] = xid
 				record = tuple([xid, event['name']])
 				result = await pgconn.copy_records_to_table('team', records=[record], columns=['xid','name'])
+				members = (','.join(event['members'].split('\n'))).split(',')
+				records = [(xid, m) for m in members]
+				result = await pgconn.copy_records_to_table('team_membership', records=records, columns=['team_xid','user_xid'])
 			elif event['event_type'] == 'update':
 				await pgconn.execute('''
 					update team
