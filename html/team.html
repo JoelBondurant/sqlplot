@@ -23,6 +23,7 @@ async function savedSelectionChanged() {
 	var xid = sel.value;
 	if (xid.length == 32) {
 		var team = await (await fetch('/team?xid=' + xid)).json();
+		team['admins'] = team['admins'].join('\n');
 		team['members'] = team['members'].join('\n');
 	} else {
 		var team = {'members': ''};

@@ -95,7 +95,6 @@
 					queryText = queryJson['query_text'];
 					connectionXid = queryJson['connection_xid'];
 				}
-				document.getElementById('xid').value = xid;
 				document.getElementById('connection_xid').value = connectionXid;
 				var name = sel.options[sel.selectedIndex].text;
 				document.getElementById('name').value = name;
@@ -108,7 +107,8 @@
 
 		<script>
 			async function saveQuery() {
-				var xid = document.getElementById('xid').value;
+				var sel = document.getElementById('saved_selection');
+				var xid = sel.value;
 				var queryText = window.editor.getValue();
 				var connectionXid = document.getElementById('connection_xid').value;
 				var name = document.getElementById('name').value;
@@ -150,7 +150,8 @@
 
 		<script>
 			async function deleteQuery() {
-				var xid = document.getElementById('xid').value;
+				var sel = document.getElementById('saved_selection');
+				var xid = sel.value;
 				if (xid.length != 32) {
 					return;
 				}
@@ -173,7 +174,8 @@
 
 		<script>
 			async function copyXid() {
-				const xid = document.getElementById('xid').value;
+				var sel = document.getElementById('saved_selection');
+				var xid = sel.value;
 				navigator.clipboard.writeText(xid);
 			}
 		</script>
