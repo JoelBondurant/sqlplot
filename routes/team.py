@@ -29,10 +29,21 @@ async def team(request):
 					set name = $2, updated = timezone('utc', now())
 					where xid = $1;
 				''', event['xid'], event['name'])
+				await pgconn.execute('''
+					delete from team_membership
+					where team_xid = $1;
+				''', event['xid'])
+				members = (','.join(event['members'].split('\n'))).split(',')
+				records = [(event['xid'], m) for m in members]
+				await pgconn.copy_records_to_table('team_membership', records=records, columns=['team_xid','user_xid'])
 			elif event['event_type'] == 'delete':
 				await pgconn.execute('''
 					delete from team
 					where xid = $1;
+				''', event['xid'])
+				await pgconn.execute('''
+					delete from team_membership
+					where team_xid = $1;
 				''', event['xid'])
 			return aiohttp.web.json_response({'xid': event['xid']})
 		rquery = dict(request.query)

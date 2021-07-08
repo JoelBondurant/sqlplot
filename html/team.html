@@ -74,11 +74,10 @@ async function savedSelectionChanged() {
 			'body': JSON.stringify(deleteEvent),
 			'headers': {'Content-Type': 'application/json'}
 		});
+		document.getElementById('name').value = '';
+		document.getElementById('members').value = '';
 		var sel = document.getElementById('saved_selection');
 		sel.remove(sel.selectedIndex);
-		document.getElementById('xid').value = '';
-		document.getElementById('name').value = '';
-		window.editor.setValue('');
 	}
 </script>
 
@@ -97,7 +96,6 @@ form {
 <br/><br/>
 <center>
 <form id="team_form" action="">
-		<input type="hidden" id="xid" name="xid" value="">
 		<label>name:</label>
 		<input id="name" type="text" value="" minlength=4 maxlength=32 required/>
 		<label>members:</label>
