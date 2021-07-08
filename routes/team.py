@@ -8,24 +8,18 @@ import orjson
 from routes import login
 
 
-FORM_FIELDS = [
-	'name',
-]
-
 
 async def team(request):
 	user_session, user_xid = login.authenticate(request)
 	async with (request.app['pg_pool']).acquire(timeout=2) as pgconn:
-		columns = ['xid'] + FORM_FIELDS.copy()
 		if request.method == 'POST':
 			event = await request.json()
-			logging.debug(f'Connection event posted: {event}')
-			event['configuration'] = fernet.encrypt(event['configuration'].encode()).decode()
+			logging.debug(f'Team event posted: {event}')
 			if event['event_type'] == 'new':
 				xid = 'x' + secrets.token_hex(16)[1:]
 				event['xid'] = xid
-				record = tuple([xid] + [event[k] for k in FORM_FIELDS])
-				result = await pgconn.copy_records_to_table('team', records=[record], columns=columns)
+				record = tuple([xid, event['name']])
+				result = await pgconn.copy_records_to_table('team', records=[record], columns=['xid','name'])
 			elif event['event_type'] == 'update':
 				await pgconn.execute('''
 					update team
@@ -41,10 +35,19 @@ async def team(request):
 		rquery = dict(request.query)
 		if 'xid' in rquery:
 			xid = rquery['xid']
-			team_json = dict(await pgconn.fetchrow(f'''
-				select {", ".join(columns)} from team where xid = $1 order by name
+			team = dict(await pgconn.fetchrow(f'''
+				select
+					t.xid,
+					t.name,
+					array_agg(tm.user_xid) as members
+				from team t
+				left join team_membership tm
+					on (t.xid = tm.team_xid)
+				where t.xid = $1
+				group by 1, 2
+				order by t.name
 			''', xid, timeout=4))
-			return aiohttp.web.json_response(team_json)
+			return aiohttp.web.json_response(team)
 		teams = await pgconn.fetch(f'''
 			select xid, name from team order by name, xid
 			''', timeout=4)
