@@ -9,11 +9,11 @@ import orjson
 from routes import login
 
 
-def member_list(list_string, extras=[]):
+def member_list(list_string, extras=[], exclude=[]):
 	members = (','.join(list_string.split('\n'))).split(',')
 	members = [m.strip() for m in members]
 	members = [m for m in members if re.match('x[0-9a-f]{31}', m)]
-	return sorted(set(members + extras))
+	return sorted(set(members + extras) - set(exclude))
 
 
 async def team(request):
@@ -27,8 +27,8 @@ async def team(request):
 				event['xid'] = xid
 				record = tuple([xid, event['name']])
 				result = await pgconn.copy_records_to_table('team', records=[record], columns=['xid','name'])
-				admins = member_list(event['admins'], [user_xid])
-				members = member_list(event['members'])
+				admins = member_list(event['admins'], extras=[user_xid])
+				members = member_list(event['members'], exclude=admins)
 				records = [(xid, m, True) for m in admins]
 				records += [(xid, m, False) for m in members]
 				columns = ['team_xid', 'user_xid', 'is_admin']
@@ -43,8 +43,8 @@ async def team(request):
 					delete from team_membership
 					where team_xid = $1;
 				''', event['xid'])
-				admins = member_list(event['admins'], [user_xid])
-				members = member_list(event['members'])
+				admins = member_list(event['admins'], extras=[user_xid])
+				members = member_list(event['members'], exclude=admins)
 				records = [(event['xid'], m, True) for m in admins]
 				records += [(event['xid'], m, False) for m in members]
 				columns = ['team_xid', 'user_xid', 'is_admin']
@@ -77,6 +77,8 @@ async def team(request):
 				group by 1, 2
 				order by 2, 1
 			''', xid, timeout=4))
+			team['admins'] = sorted(team['admins'])
+			team['members'] = sorted(team['members'])
 			return aiohttp.web.json_response(team)
 		teams = await pgconn.fetch(f'''
 			select xid, name from team order by name, xid

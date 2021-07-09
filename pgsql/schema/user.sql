@@ -1,8 +1,7 @@
-drop table if exists "user";
+drop table if exists "user" cascade;
 
 create table if not exists "user" (
-	id serial primary key,
-	xid char(32) not null,
+	xid char(32) primary key,
 	name varchar(32) not null unique,
 	key varchar(64) not null,
 	salt varchar(32) not null,
