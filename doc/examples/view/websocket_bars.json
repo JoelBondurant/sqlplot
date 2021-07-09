@@ -1,0 +1,13 @@
+{
+	"description": "A simple bar chart with embedded data.",
+	"width": 800,
+	"height": 400,
+	"data": {"name": "table"},
+	"mark": "bar",
+	"encoding": {
+		"x": {"field": "a", "type": "ordinal"},
+		"y": {"field": "b", "type": "quantitative"},
+		"tooltip": {"field": "b", "type": "quantitative"}
+	}
+}
+
