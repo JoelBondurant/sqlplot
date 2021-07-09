@@ -65,6 +65,17 @@ function sendQueryEvent(event) {
 	}
 }
 </script>
+<script>
+function sendQuery() {
+	document.getElementById('results_panel').innerHTML = '';
+	var event = {
+		'query_text': window.editor.getValue(),
+		'connection_xid': document.getElementById('connection_xid').value,
+		'requested': (new Date()).getTime()
+	}
+	sendQueryEvent(event);
+}
+</script>
 
 <div id="main">
 
@@ -98,14 +109,8 @@ function sendQueryEvent(event) {
 				wordWrap: 'on'
 			});
 			document.addEventListener('keydown', (event) => {
-				if (event.shiftKey && event.key == 'Enter') {
-					//document.getElementById('results_panel').innerHTML = '';
-					var event = {
-						'query_text': window.editor.getValue(),
-						'connection_xid': document.getElementById('connection_xid').value,
-						'requested': (new Date()).getTime()
-					}
-					sendQueryEvent(event);
+				if (event.altKey && event.key == 'Enter') {
+					sendQuery();
 				}
 			});
 		</script>
@@ -209,17 +214,17 @@ function sendQueryEvent(event) {
 		</script>
 
 		<form name="query_form" action="">
-			<label for="name">Name:</label>
+			<label for="name">name:</label>
 			<input id="name" type="text" name="name" value="" minlength="4" maxlength="32" required/>
-			<label for="connection_xid">Connection:</label>
+			<label for="connection_xid">connection:</label>
 			<select id="connection_xid" name="connection_xid">
 				{% for connection_label in connection_labels: %}
 				<option value="{{ connection_label[0] }}">{{ connection_label[1] }}</option>
 				{% endfor %}
 			</select>
 			<input type="hidden" id="xid" name="xid" value="">
-			<input type="button" value="save" onclick="saveQuery();">
-			<input type="button" value="delete" onclick="deleteQuery();">
+			<input type="button" value="save" title="save(query_xid)" onclick="saveQuery();">
+			<input type="button" value="delete" title="delete(query_xid)" onclick="deleteQuery();">
 			<label for="saved_selection">queries:</label>
 			<select id="saved_selection" onclick="savedSelectionChanged();">
 				<option value="" selected></option>
@@ -227,7 +232,8 @@ function sendQueryEvent(event) {
 				<option value="{{ query['xid'] }}">{{ query['name'] }}</option>
 				{% endfor %}
 			</select>
-			<input type="button" value="xid" onclick="copyXid();">
+			<input type="button" value="xid" title="copy(query_xid)" onclick="copyXid();">
+			<input type="button" value="exec" title="alt+Enter" onclick="sendQuery();">
 		</form>
 	</div>
 
