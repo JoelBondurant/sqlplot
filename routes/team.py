@@ -66,8 +66,8 @@ async def team(request):
 				select
 					t.xid,
 					t.name,
-					array_agg(atm.user_xid) as admins,
-					array_agg(tm.user_xid) as members
+					array(select distinct * from unnest(array_agg(atm.user_xid))) as admins,
+					array(select distinct * from unnest(array_agg(tm.user_xid))) as members
 				from team t
 				left join team_membership atm
 					on (t.xid = atm.team_xid and atm.is_admin)
