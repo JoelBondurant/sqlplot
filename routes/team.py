@@ -20,9 +20,12 @@ async def team(request):
 				event['xid'] = xid
 				record = tuple([xid, event['name']])
 				result = await pgconn.copy_records_to_table('team', records=[record], columns=['xid','name'])
+				admins = (','.join(event['admins'].split('\n'))).split(',')
 				members = (','.join(event['members'].split('\n'))).split(',')
-				records = [(xid, m) for m in members]
-				result = await pgconn.copy_records_to_table('team_membership', records=records, columns=['team_xid','user_xid'])
+				records = [(xid, m, True) for m in admins]
+				records += [(xid, m, False) for m in members]
+				columns = ['team_xid', 'user_xid', 'is_admin']
+				await pgconn.copy_records_to_table('team_membership', records=records, columns=columns)
 			elif event['event_type'] == 'update':
 				await pgconn.execute('''
 					update team
@@ -33,9 +36,12 @@ async def team(request):
 					delete from team_membership
 					where team_xid = $1;
 				''', event['xid'])
+				admins = (','.join(event['admins'].split('\n'))).split(',')
 				members = (','.join(event['members'].split('\n'))).split(',')
-				records = [(event['xid'], m) for m in members]
-				await pgconn.copy_records_to_table('team_membership', records=records, columns=['team_xid','user_xid'])
+				records = [(event['xid'], m, True) for m in admins]
+				records += [(event['xid'], m, False) for m in members]
+				columns = ['team_xid', 'user_xid', 'is_admin']
+				await pgconn.copy_records_to_table('team_membership', records=records, columns=columns)
 			elif event['event_type'] == 'delete':
 				await pgconn.execute('''
 					delete from team
@@ -53,13 +59,16 @@ async def team(request):
 				select
 					t.xid,
 					t.name,
+					array_agg(atm.user_xid) as admins,
 					array_agg(tm.user_xid) as members
 				from team t
+				left join team_membership atm
+					on (t.xid = atm.team_xid and atm.is_admin)
 				left join team_membership tm
-					on (t.xid = tm.team_xid)
+					on (t.xid = tm.team_xid and not tm.is_admin)
 				where t.xid = $1
 				group by 1, 2
-				order by t.name
+				order by 2, 1
 			''', xid, timeout=4))
 			return aiohttp.web.json_response(team)
 		teams = await pgconn.fetch(f'''

@@ -32,10 +32,40 @@
 <body>
 
 <script>
-	const querySocket = new WebSocket('ws://127.0.0.1:8080/query_socket');
+function openResultsSocket() {
+	var resultsSocket = new WebSocket('ws://127.0.0.1:8080/results_socket');
+	resultsSocket.onmessage = async (msg) => {
+		var resultStatus = JSON.parse(msg.data)['status'];
+		if (resultStatus == 'ready') {
+			await renderResults();
+		}
+	}
+	resultsSocket.onclose = () => {
+		resultsSocket = null;
+		setTimeout(openResultsSocket, 2000);
+	}
+	return resultsSocket;
+}
+var resultsSocket = openResultsSocket();
+</script>
+<script>
+function openQuerySocket() {
+	var querySocket = new WebSocket('ws://127.0.0.1:8080/query_socket');
 	querySocket.onmessage = (msg) => {
 		console.log(msg);
 	}
+	return querySocket;
+}
+var querySocket = openQuerySocket();
+function sendQueryEvent(event) {
+	if (resultsSocket.readyState != 1) {
+		resultsSocket = openResultsSocket();
+	}
+	if (querySocket.readyState != 1) {
+		querySocket = openQuerySocket();
+	}
+	setTimeout(() => {querySocket.send(JSON.stringify(event))}, 1000);
+}
 </script>
 
 <div id="main">
@@ -76,7 +106,7 @@
 						'connection_xid': document.getElementById('connection_xid').value,
 						'requested': (new Date()).getTime()
 					}
-					querySocket.send(JSON.stringify(event));
+					sendQueryEvent(event);
 				}
 			});
 		</script>
@@ -246,15 +276,6 @@
 				.style("font-size", "12px");
 
 		}
-		</script>
-		<script>
-			const resultsSocket = new WebSocket('ws://127.0.0.1:8080/results_socket');
-			resultsSocket.onmessage = async (msg) => {
-				var resultStatus = JSON.parse(msg.data)['status'];
-				if (resultStatus == 'ready') {
-					await renderResults();
-				}
-			}
 		</script>
 
 	</div>

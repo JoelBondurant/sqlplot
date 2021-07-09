@@ -26,10 +26,11 @@ async function savedSelectionChanged() {
 		team['admins'] = team['admins'].join('\n');
 		team['members'] = team['members'].join('\n');
 	} else {
-		var team = {'members': ''};
+		var team = {'admins': '', 'members': ''};
 	}
 	var name = sel.options[sel.selectedIndex].text;
 	document.getElementById('name').value = name;
+	document.getElementById('admins').value = team['admins'];
 	document.getElementById('members').value = team['members'];
 }
 </script>
@@ -39,6 +40,7 @@ async function savedSelectionChanged() {
 		var sel = document.getElementById('saved_selection');
 		var xid = sel.value;
 		var name = document.getElementById('name').value;
+		var admins = document.getElementById('admins').value;
 		var members = document.getElementById('members').value;
 		if ((name.length < 4) || (name.length > 32)) {
 			return;
@@ -52,6 +54,7 @@ async function savedSelectionChanged() {
 			'event_type': eventType,
 			'xid': xid,
 			'name': name,
+			'admins': admins,
 			'members': members
 		};
 		var saveResp = await fetch('/team', {
@@ -90,6 +93,7 @@ async function savedSelectionChanged() {
 			'headers': {'Content-Type': 'application/json'}
 		});
 		document.getElementById('name').value = '';
+		document.getElementById('admins').value = '';
 		document.getElementById('members').value = '';
 		var sel = document.getElementById('saved_selection');
 		sel.remove(sel.selectedIndex);
@@ -113,8 +117,10 @@ form {
 <form id="team_form" action="">
 		<label>name:</label>
 		<input id="name" type="text" value="" minlength=4 maxlength=32 required/>
+		<label>admins:</label>
+		<textarea id='admins' form="team_form" cols=32 rows=4 style="resize: vertical;"></textarea>
 		<label>members:</label>
-		<textarea id='members' form="team_form" cols=32 rows=20 style="resize: vertical;"></textarea>
+		<textarea id='members' form="team_form" cols=32 rows=12 style="resize: vertical;"></textarea>
 		<div></div>
 		<div>
 			<input id="save" type="button" value="save" onclick="saveTeam();">
