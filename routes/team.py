@@ -1,5 +1,6 @@
 import logging
 import secrets
+import re
 
 import aiohttp
 import aiohttp_jinja2
@@ -7,6 +8,12 @@ import orjson
 
 from routes import login
 
+
+def member_list(list_string):
+	members = (','.join(list_string.split('\n'))).split(',')
+	members = [m.strip() for m in members]
+	members = [m for m in members if re.match('x[0-9a-f]{31}', m)]
+	return members
 
 
 async def team(request):
@@ -20,8 +27,8 @@ async def team(request):
 				event['xid'] = xid
 				record = tuple([xid, event['name']])
 				result = await pgconn.copy_records_to_table('team', records=[record], columns=['xid','name'])
-				admins = (','.join(event['admins'].split('\n'))).split(',')
-				members = (','.join(event['members'].split('\n'))).split(',')
+				admins = member_list(event['admins'])
+				members = member_list(event['members'])
 				records = [(xid, m, True) for m in admins]
 				records += [(xid, m, False) for m in members]
 				columns = ['team_xid', 'user_xid', 'is_admin']
@@ -36,8 +43,8 @@ async def team(request):
 					delete from team_membership
 					where team_xid = $1;
 				''', event['xid'])
-				admins = (','.join(event['admins'].split('\n'))).split(',')
-				members = (','.join(event['members'].split('\n'))).split(',')
+				admins = member_list(event['admins'])
+				members = member_list(event['members'])
 				records = [(event['xid'], m, True) for m in admins]
 				records += [(event['xid'], m, False) for m in members]
 				columns = ['team_xid', 'user_xid', 'is_admin']
