@@ -101,6 +101,11 @@ async function savedSelectionChanged() {
 	}
 </script>
 
+<script>
+	async function copyUserXid() {
+		navigator.clipboard.writeText('{{ user_xid }}');
+	}
+</script>
 
 <style>
 form {
@@ -126,6 +131,7 @@ form {
 		<div>
 			<input id="save" type="button" value="save" onclick="saveTeam();">
 			<input id="delete" type="button" value="delete" onclick="deleteTeam();">
+			<input id="user_xid" type="button" value="user_xid" onclick="copyUserXid();">
 		</div>
 		<label>teams:</label>
 		<select name="saved_selection" id="saved_selection" onclick="savedSelectionChanged();">

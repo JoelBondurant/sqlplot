@@ -25,10 +25,9 @@ async def results_socket(request):
 	user_session, user_xid = login.authenticate(request)
 	redis = request.app['redis']
 	channel = (await redis.subscribe(user_xid))[0]
-	resp = aiohttp.web.WebSocketResponse(autoclose=False)
+	resp = aiohttp.web.WebSocketResponse(autoclose=True)
 	asyncio.get_running_loop().create_task(channel_reader(channel, resp))
 	await resp.prepare(request)
-	logging.info('Listening for results...')
 	async for msg in resp:
 		event = orjson.loads(msg[1])
 		event['user_xid'] = user_xid

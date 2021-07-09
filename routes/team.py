@@ -13,7 +13,7 @@ def member_list(list_string, extras=[]):
 	members = (','.join(list_string.split('\n'))).split(',')
 	members = [m.strip() for m in members]
 	members = [m for m in members if re.match('x[0-9a-f]{31}', m)]
-	return list(set(members + extras))
+	return sorted(set(members + extras))
 
 
 async def team(request):
@@ -84,6 +84,7 @@ async def team(request):
 		teams = [dict(x) for x in teams]
 		context = {
 			'teams': teams,
+			'user_xid': user_xid,
 		}
 		resp = aiohttp_jinja2.render_template('team.html', request, context)
 		return resp

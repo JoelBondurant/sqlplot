@@ -12,7 +12,7 @@ async def query_socket(request):
 	logging.info('Query socket opened.')
 	user_session, user_xid = login.authenticate(request)
 	redis = request.app['redis']
-	resp = aiohttp.web.WebSocketResponse()
+	resp = aiohttp.web.WebSocketResponse(autoclose=True)
 	await resp.prepare(request)
 	async for msg in resp:
 		event = orjson.loads(msg[1])

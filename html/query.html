@@ -40,10 +40,6 @@ function openResultsSocket() {
 			await renderResults();
 		}
 	}
-	resultsSocket.onclose = () => {
-		resultsSocket = null;
-		setTimeout(openResultsSocket, 2000);
-	}
 	return resultsSocket;
 }
 var resultsSocket = openResultsSocket();
@@ -103,6 +99,7 @@ function sendQueryEvent(event) {
 			});
 			document.addEventListener('keydown', (event) => {
 				if (event.shiftKey && event.key == 'Enter') {
+					//document.getElementById('results_panel').innerHTML = '';
 					var event = {
 						'query_text': window.editor.getValue(),
 						'connection_xid': document.getElementById('connection_xid').value,
@@ -121,13 +118,12 @@ function sendQueryEvent(event) {
 				var sel = document.getElementById('saved_selection');
 				var xid = sel.value;
 				var queryText = "";
-				var xconnectionId = "";
 				if (xid.length == 32) {
 					var queryJson = await (await fetch('/query?xid=' + xid)).json();
 					queryText = queryJson['query_text'];
 					connectionXid = queryJson['connection_xid'];
+					document.getElementById('connection_xid').value = connectionXid;
 				}
-				document.getElementById('connection_xid').value = connectionXid;
 				var name = sel.options[sel.selectedIndex].text;
 				document.getElementById('name').value = name;
 				if (queryText.length > 0) {
