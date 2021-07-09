@@ -74,10 +74,22 @@ form {
 		minlength=8 maxlength=64 required/>
 	<div></div>
 	<div>
-		<input type="button" value="signup" onclick="signUp();">
+		<input type="button" value="signup" style="width: 6em;" onclick="signUp();">
+	</div>
+	<div></div>
+	<div>
+		<button style="width: 6em;" onclick="window.location.assign('/login')">login</button>
 	</div>
 </form>
 </center>
+
+<script>
+document.getElementById('password').addEventListener('keydown', async (event) => {
+	if (event.key == 'Enter') {
+		await signUp();
+	}
+});
+</script>
 
 </body>
 </html>
