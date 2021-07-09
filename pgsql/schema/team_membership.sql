@@ -5,6 +5,4 @@ create table if not exists "team_membership" (
 	team_xid char(32) not null,
 	user_xid char(32) not null,
 	is_admin boolean not null default false,
-	created timestamp not null default current_timestamp,
-	updated timestamp not null default current_timestamp
 );
