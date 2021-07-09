@@ -33,6 +33,13 @@ async def login(request):
 	if request.method == 'POST':
 		await asyncio.sleep(0.2)
 		form = await request.json()
+		try:
+			timebomb = form['timebomb']
+			jwt.decode(timebomb, request.app['config']['user']['session_key'])
+		except:
+			resp = aiohttp.web.json_response({'status': 'fail'})
+			resp.del_cookie('user_session')
+			return resp
 		name = form['name']
 		password = form['password']
 		assert len(name) >= 4
@@ -55,7 +62,12 @@ async def login(request):
 		resp = aiohttp.web.json_response({'status': 'fail'})
 		resp.del_cookie('user_session')
 		return resp
-	resp = aiohttp_jinja2.render_template('login.html', request, {})
+	timebomb = {'exp': (datetime.datetime.utcnow() + datetime.timedelta(seconds=120))}
+	timebomb = jwt.encode(timebomb, request.app['config']['user']['session_key']).decode()
+	context = {
+		'timebomb': timebomb
+	}
+	resp = aiohttp_jinja2.render_template('login.html', request, context)
 	resp.del_cookie('user_session')
 	return resp
 

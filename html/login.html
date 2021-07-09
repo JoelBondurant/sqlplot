@@ -1,4 +1,5 @@
 {% include "header.html" %}
+<meta http-equiv="refresh" content="120">
 </head>
 
 <body>
@@ -48,7 +49,8 @@ async function logIn() {
 	}
 	var derivedKey = await deriveKey(password);
 	var derivedPassword = (await crypto.subtle.exportKey('jwk', derivedKey))['k'];
-	var formData = {'name': name, 'password': derivedPassword};
+	var timebomb = '{{ timebomb }}';
+	var formData = {'name': name, 'password': derivedPassword, 'timebomb': timebomb};
 	var resp = await (await fetch('/login', {
 		'method': 'POST',
 		'body': JSON.stringify(formData),
@@ -111,14 +113,6 @@ form {
 </form>
 </center>
 
-
-<script>
-document.getElementById('password').addEventListener('keydown', async (event) => {
-	if (event.key == 'Enter') {
-		await logIn();
-	}
-});
-</script>
 
 </body>
 </html>
