@@ -61,10 +61,12 @@ function sendQueryEvent(event) {
 	if (resultsSocket.readyState != 1) {
 		resultsSocket = openResultsSocket();
 	}
-	if (querySocket.readyState != 1) {
+	if (querySocket.readyState == 1) {
+		querySocket.send(JSON.stringify(event));
+	} else {
 		querySocket = openQuerySocket();
+		setTimeout(() => {querySocket.send(JSON.stringify(event))}, 1000);
 	}
-	setTimeout(() => {querySocket.send(JSON.stringify(event))}, 1000);
 }
 </script>
 
