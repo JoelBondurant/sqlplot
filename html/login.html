@@ -34,11 +34,16 @@ async function deriveKey(akey) {
 <script>
 async function logIn() {
 	var name = document.getElementById('name').value;
+	var tooltip = document.getElementById('tooltip');
 	if ((name.length < 4) || (name.length > 32)) {
+		tooltip.innerHTML = 'Name length ('+name.length+') ∉ [4, 32].';
+		tooltip.style.visibility = 'visible';
 		return;
 	}
 	var password = document.getElementById('password').value;
 	if ((password.length < 8) || (password.length > 64)) {
+		tooltip.innerHTML = 'Password length ('+password.length+') ∉ [8, 64].';
+		tooltip.style.visibility = 'visible';
 		return;
 	}
 	var derivedKey = await deriveKey(password);
@@ -49,9 +54,14 @@ async function logIn() {
 		'body': JSON.stringify(formData),
 		'headers': {'Content-Type': 'application/json'}})).json();
 	if (resp['status'] == 'success') {
-		window.location.assign('/');
+		tooltip.innerHTML = 'login success.';
+		tooltip.style.visibility = 'visible';
+		tooltip.style.backgroundColor = '#afa';
+		setTimeout(() => window.location.assign('/'), 600);
 	}
 	else if (resp['status'] == 'fail') {
+		tooltip.innerHTML = 'login fail.';
+		tooltip.style.visibility = 'visible';
 		document.getElementById('name').value = '';
 		document.getElementById('password').value = '';
 	}
@@ -59,6 +69,17 @@ async function logIn() {
 </script>
 
 <style>
+#tooltip {
+	background-color: #ff4545;
+	color: #000;
+	width: 100%;
+	height: 1.2em;
+	padding: 2px;
+	visibility: hidden;
+	opacity: 90%;
+	font-weight: bold;
+	border: 1px solid #fff;
+}
 form {
 	display: grid;
 	grid-template-columns: auto 1fr;
@@ -70,6 +91,7 @@ form {
 </style>
 
 <center>
+<div id="tooltip"></div>
 <br/><br/>
 <form id="login_form" action="">
 	<label for="name">name:</label>
