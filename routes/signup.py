@@ -9,9 +9,9 @@ import aiohttp_jinja2
 
 async def signup(request):
 	if request.method == 'POST':
-		form = await request.json()
-		name = form['name']
-		password = form['password']
+		event = await request.json()
+		name = event['name']
+		password = event['password']
 		try:
 			assert len(name) >= 4
 			assert len(name) <= 16

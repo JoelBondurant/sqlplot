@@ -50,10 +50,10 @@ async function logIn() {
 	var derivedKey = await deriveKey(password);
 	var derivedPassword = (await crypto.subtle.exportKey('jwk', derivedKey))['k'];
 	var timebomb = '{{ timebomb }}';
-	var formData = {'name': name, 'password': derivedPassword, 'timebomb': timebomb};
+	var logInEvent = {'name': name, 'password': derivedPassword, 'timebomb': timebomb};
 	var resp = await (await fetch('/login', {
 		'method': 'POST',
-		'body': JSON.stringify(formData),
+		'body': JSON.stringify(logInEvent),
 		'headers': {'Content-Type': 'application/json'}})).json();
 	if (resp['status'] == 'success') {
 		tooltip.innerHTML = 'login success.';
@@ -104,7 +104,7 @@ form {
 		minlength=8 maxlength=64 required/>
 	<div></div>
 	<div>
-		<input id="login" type="button" value="login" style="width: 6em;" onclick="logIn();">
+		<input id="login" type="button" value="login" style="width: 6em;" onclick="logIn()">
 	</div>
 	<div></div>
 	<div>

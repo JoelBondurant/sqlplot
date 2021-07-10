@@ -47,8 +47,8 @@ async function signUp() {
 	}
 	var derivedKey = await deriveKey(password);
 	var derivedPassword = (await crypto.subtle.exportKey('jwk', derivedKey))['k'];
-	var formData = {'name': name, 'password': derivedPassword};
-	var resp = await (await fetch('/signup', {'method': 'POST', 'body': JSON.stringify(formData)})).json();
+	var signUpEvent = {'name': name, 'password': derivedPassword};
+	var resp = await (await fetch('/signup', {'method': 'POST', 'body': JSON.stringify(signUpEvent)})).json();
 	if (resp['status'] == 'success') {
 		tooltip.innerHTML = 'signup success.';
 		tooltip.style.visibility = 'visible';

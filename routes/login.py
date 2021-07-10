@@ -32,16 +32,16 @@ def session(request, session_name):
 async def login(request):
 	if request.method == 'POST':
 		await asyncio.sleep(0.2)
-		form = await request.json()
+		event = await request.json()
 		try:
-			timebomb = form['timebomb']
+			timebomb = event['timebomb']
 			jwt.decode(timebomb, request.app['config']['user']['session_key'])
 		except:
 			resp = aiohttp.web.json_response({'status': 'fail'})
 			resp.del_cookie('user_session')
 			return resp
-		name = form['name']
-		password = form['password']
+		name = event['name']
+		password = event['password']
 		assert len(name) >= 4
 		assert len(password) >= 16
 		try:
