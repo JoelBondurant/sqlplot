@@ -214,6 +214,7 @@ function sendQuery() {
 		</script>
 
 		<form name="query_form" action="">
+			<input type="hidden" id="xid" name="xid" value="">
 			<label for="name">name:</label>
 			<input id="name" type="text" name="name" value="" minlength="4" maxlength="32" required/>
 			<label for="connection_xid">connection:</label>
@@ -222,7 +223,20 @@ function sendQuery() {
 				<option value="{{ connection_label[0] }}">{{ connection_label[1] }}</option>
 				{% endfor %}
 			</select>
-			<input type="hidden" id="xid" name="xid" value="">
+			<label for="editors_selection">editors:</label>
+			<select id="editors_selection" style="vertical-align: bottom;" size=1 multiple>
+				<option value=""></option>
+				{% for team in teams %}
+				<option value="{{ team['xid'] }}">{{ team['name'] }}</option>
+				{% endfor %}
+			</select>
+			<label for="readers_selection">readers:</label>
+			<select id="readers_selection" style="vertical-align: bottom;" size=1 multiple>
+				<option value=""></option>
+				{% for team in teams %}
+				<option value="{{ team['xid'] }}">{{ team['name'] }}</option>
+				{% endfor %}
+			</select>
 			<input type="button" value="save" title="save(query_xid)" onclick="saveQuery();">
 			<input type="button" value="delete" title="delete(query_xid)" onclick="deleteQuery();">
 			<label for="saved_selection">queries:</label>

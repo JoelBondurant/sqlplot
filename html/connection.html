@@ -13,6 +13,8 @@
 	width: 99%;
 	height: 300px;
 	border: 1px solid #555;
+	resize: vertical;
+	overflow: hidden;
 }
 #control_panel {
 	width: 99%;
@@ -149,14 +151,29 @@
 
 
 		<form name="control_form" action="">
+			<input type="hidden" id="xid" name="xid" value="">
 			<label for="name">name:</label>
 			<input id="name" type="text" name="name" value="" minlength="4" maxlength="32" required/>
 			<label for="type">type:</label>
 			<select id="type" name="type" required>
 				<option value="PostgreSQL">PostgreSQL</option>
 				<option value="MySQL">MySQL</option>
+				<option value="Drill">MySQL</option>
 			</select>
-			<input type="hidden" id="xid" name="xid" value="">
+			<label for="editors_selection">editors:</label>
+			<select id="editors_selection" style="vertical-align: bottom;" size=1 multiple>
+				<option value=""></option>
+				{% for team in teams %}
+				<option value="{{ team['xid'] }}">{{ team['name'] }}</option>
+				{% endfor %}
+			</select>
+			<label for="readers_selection">readers:</label>
+			<select id="readers_selection" style="vertical-align: bottom;" size=1 multiple>
+				<option value=""></option>
+				{% for team in teams %}
+				<option value="{{ team['xid'] }}">{{ team['name'] }}</option>
+				{% endfor %}
+			</select>
 			<input type="button" value="save" onclick="saveConnection();">
 			<input type="button" value="delete" onclick="deleteConnection();">
 			<label for="saved_selection">connections:</label>

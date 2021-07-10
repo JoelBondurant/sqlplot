@@ -60,8 +60,18 @@ async def connection(request):
 			select xid, name from connection where user_xid = $1 order by name, xid
 			''', user_xid, timeout=4)
 		connections = [dict(x) for x in connections]
+		teams = await pgconn.fetch(f'''
+			select distinct t.xid, t.name
+			from team_membership tm
+			join team t
+				on (tm.team_xid = t.xid)
+			where tm. user_xid = $1
+			order by 2, 1
+			''', user_xid, timeout=4)
+		teams = [dict(x) for x in teams]
 		context = {
 			'connections': connections,
+			'teams': teams
 		}
 		resp = aiohttp_jinja2.render_template('connection.html', request, context)
 		return resp
