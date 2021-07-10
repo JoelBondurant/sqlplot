@@ -219,8 +219,8 @@ function sendQuery() {
 			<input id="name" type="text" name="name" value="" minlength="4" maxlength="32" required/>
 			<label for="connection_xid">connection:</label>
 			<select id="connection_xid" name="connection_xid">
-				{% for connection_label in connection_labels: %}
-				<option value="{{ connection_label[0] }}">{{ connection_label[1] }}</option>
+				{% for connection in connections: %}
+				<option value="{{ connection['xid'] }}">{{ connection['name'] }}</option>
 				{% endfor %}
 			</select>
 			<label for="editors_selection">editors:</label>

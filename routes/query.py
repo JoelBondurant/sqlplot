@@ -64,15 +64,23 @@ async def query(request):
 			select {", ".join(columns)} from query order by name
 			''', timeout=4)
 		queries = [dict(x) for x in queries]
-		connection_data = await pgconn.fetch(f'''
+		connections = await pgconn.fetch(f'''
 			select xid, name from connection where user_xid = $1 order by 2
 			''', user_xid, timeout=4)
-		connection_xids = [x[0] for x in connection_data] + CONNECTION_XIDS.copy()
-		connection_names = [x[1] for x in connection_data] + CONNECTION_XIDS.copy()
-		connection_labels = [*zip(connection_xids, connection_names)]
+		connections = [dict(x) for x in connections]
+		teams = await pgconn.fetch(f'''
+			select distinct t.xid, t.name
+			from team_membership tm
+			join team t
+				on (tm.team_xid = t.xid)
+			where tm.user_xid = $1
+			order by 2, 1
+			''', user_xid, timeout=4)
+		teams = [dict(x) for x in teams]
 		context = {
 			'queries': queries,
-			'connection_labels': connection_labels,
+			'connections': connections,
+			'teams': teams,
 			'user_xid': user_xid,
 		}
 		resp = aiohttp_jinja2.render_template('query.html', request, context)

@@ -5,7 +5,6 @@
 	scrollbar-width: thin;
 	scrollbar-color: #333;
 }
-
 *::-webkit-scrollbar {
 	width: 10px;
 }
@@ -18,17 +17,14 @@
 	border-radius: 4px;
 	border: 1px solid #888;
 }
-
 html, body {
 	background-color: #111;
 	color: #ddd;
 	height: 99%;
 }
-
 a {
 	color: #ccc;
 }
-
 button, input[type=button], input[type=submit] {
 	background-color: #333;
 	border: 1px solid #888;
@@ -54,7 +50,20 @@ textarea {
 	font-size: 14px;
 	padding: 4px 12px;
 }
-input[type=text], input[type=password], select {
+select {
+	background-color: #333;
+	color: #ccc;
+	padding: 4px 12px;
+}
+select option:checked, option:hover {
+	background-color: #333;
+	color: #ccc;
+}
+select:focus > option:checked {
+	background: #444 !important;
+	color: #ccf;
+}
+input[type=text], input[type=password] {
 	background-color: #333;
 	color: white;
 	font-size: 14px;
@@ -96,5 +105,7 @@ input[type=range]::-webkit-slider-thumb {
 input[type=range]::focus {
 	outline: none;
 }
-
-
+*::selection {
+	color: #000;
+	background: #aaa;
+}
