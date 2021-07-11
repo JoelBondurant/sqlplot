@@ -224,14 +224,14 @@ function sendQuery() {
 				{% endfor %}
 			</select>
 			<label for="editors_selection">editors:</label>
-			<select id="editors_selection" style="vertical-align: bottom;" size=1 multiple>
+			<select id="editors_selection" style="vertical-align: bottom;">
 				<option value=""></option>
 				{% for team in teams %}
 				<option value="{{ team['xid'] }}">{{ team['name'] }}</option>
 				{% endfor %}
 			</select>
 			<label for="readers_selection">readers:</label>
-			<select id="readers_selection" style="vertical-align: bottom;" size=1 multiple>
+			<select id="readers_selection" style="vertical-align: bottom;">
 				<option value=""></option>
 				{% for team in teams %}
 				<option value="{{ team['xid'] }}">{{ team['name'] }}</option>
