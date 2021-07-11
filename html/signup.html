@@ -1,6 +1,20 @@
 {% include "header.html" %}
 </head>
 <body>
+
+<style>
+#nav_panel {
+	width: 99%;
+	height: 30px;
+	border: 1px solid #555;
+}
+</style>
+<div id="nav_panel">
+	<button onclick="window.location.assign('/')">home</button>
+	<button onclick="window.location.assign('/login')">login</button>
+</div>
+
+
 <script>
 async function deriveKey(akey) {
 	akey = await crypto.subtle.importKey(
@@ -99,10 +113,6 @@ form {
 	<div>
 		<input type="button" value="signup" style="width: 6em;" onclick="signUp();">
 	</div>
-	<div></div>
-	<div>
-		<button style="width: 6em;" onclick="window.location.assign('/login')">login</button>
-	</div>
 </form>
 </center>
 
@@ -114,7 +124,7 @@ document.getElementById('password').addEventListener('keydown', async (event) =>
 });
 </script>
 
-<canvas id="canvas" style="position:fixed;top:0;left:0;pointer-events:none;mix-blend-mode:screen;" width="99%" height="99%"></canvas>
+<canvas id="canvas" style="position:fixed;top:32;left:0;pointer-events:none;mix-blend-mode:screen;" width="99%" height="99%"></canvas>
 <script>
 window.onload = function() {
 	var canvas = document.getElementById("canvas");
@@ -162,7 +172,7 @@ window.onload = function() {
 				var yd = p2.location.y - p.location.y;
 				var xd = p2.location.x - p.location.x;
 				var distance = Math.sqrt(xd*xd + yd*yd);
-				if (distance < 250) {
+				if (distance < 260) {
 					ctx.beginPath();
 					ctx.lineWidth = 2;
 					ctx.moveTo(p.location.x, p.location.y);
