@@ -22,6 +22,9 @@ html, body {
 	color: #ddd;
 	height: 99%;
 }
+html {
+	scroll-behavior: smooth;
+}
 a {
 	color: #ccc;
 }
