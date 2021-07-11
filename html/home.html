@@ -5,6 +5,21 @@
 	height: 30px;
 	border: 1px solid #555;
 }
+@font-face {
+	font-family: "Otomanopee One";
+	src: url("/font/OtomanopeeOne-Regular.ttf") format("truetype");
+}
+.big {
+	font-family: "Otomanopee One";
+	font-size: 72px;
+	font-weight: bold;
+	margin: 50px;
+}
+.smol {
+	font-family: "Otomanopee One";
+	font-size: 42px;
+	margin: 50px;
+}
 </style>
 </head>
 <body>
@@ -26,10 +41,17 @@
 
 	<div>
 		<center>
+			<div class="big">
+			Data Driven Dashboards.
+			<br/><br/><br/><br/>
+			</div>
+			<div class="smol">
+			SQL & Javascript injection as a service.
+			<br/><br/>
+			</div>
 		</center>
 	</div>
 </div>
-
 <canvas id="canvas" style="position:fixed;top:32;left:0;pointer-events:none;mix-blend-mode:screen;" width="99%" height="99%"></canvas>
 <script>
 window.onload = function() {
