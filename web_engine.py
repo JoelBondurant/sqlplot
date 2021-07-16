@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import logging
+import ssl
 import sys
 
 import aiofiles
@@ -82,7 +83,9 @@ async def app_factory(argv=[]):
 
 
 def main():
-	web.run_app(app_factory(), port=8080)
+	ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+	ssl_context.load_cert_chain('/secrets/domain_srv.crt', '/secrets/domain_srv.key')
+	web.run_app(app_factory(), port=8080, ssl_context=ssl_context)
 
 
 if __name__ == '__main__':
