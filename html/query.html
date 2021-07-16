@@ -33,7 +33,7 @@
 
 <script>
 function openResultsSocket() {
-	var resultsSocket = new WebSocket('ws://127.0.0.1:8080/results_socket');
+	var resultsSocket = new WebSocket('wss://127.0.0.1:8080/results_socket');
 	resultsSocket.onmessage = async (msg) => {
 		var resultStatus = JSON.parse(msg.data)['status'];
 		if (resultStatus == 'ready') {
@@ -46,7 +46,7 @@ var resultsSocket = openResultsSocket();
 </script>
 <script>
 function openQuerySocket() {
-	var querySocket = new WebSocket('ws://127.0.0.1:8080/query_socket');
+	var querySocket = new WebSocket('wss://127.0.0.1:8080/query_socket');
 	querySocket.onmessage = (msg) => {
 		console.log(msg);
 	}
