@@ -41,20 +41,27 @@
 
 <script>
 	async function savedSelectionChanged() {
-		var sel = document.getElementById('saved_selection');
-		var xid = sel.value;
-		var config = "";
-		var type = "";
+		var checked = document.querySelector('#connections input[type="radio"]:checked');
+		if (checked == null) {
+			document.querySelector('#new_connection').checked = true;
+			var xid = '';
+		} else {
+			var xid = checked.value;
+		}
+		var config = '';
+		var type = '';
+		var name = '';
 		if (xid.length == 32) {
-			var connJson = await (await fetch('/connection?xid=' + xid)).json();
-			config = connJson['configuration'];
-			type = connJson['type'];
+			var conn = await (await fetch('/connection?xid=' + xid)).json();
+			config = conn['configuration'];
+			type = conn['type'];
+			name = conn['name'];
 		}
-		document.getElementById('xid').value = xid;
 		if (type.length > 0) {
-			document.getElementById('type').value = type;
+			var typeInputs = document.querySelectorAll('#type input[type="radio"]');
+			var typeIndex = Array.from(typeInputs).map(x=>x.value).indexOf(type);
+			typeInputs[typeIndex].checked = true;
 		}
-		var name = sel.options[sel.selectedIndex].text;
 		document.getElementById('name').value = name;
 		window.editor.setValue(config);
 	}
@@ -62,9 +69,9 @@
 
 <script>
 	async function saveConnection() {
-		var xid = document.getElementById('xid').value;
+		var xid = document.querySelector('#connections input[type="radio"]:checked').value;
 		var configuration = window.editor.getValue();
-		var type = document.getElementById('type').value;
+		var type = document.querySelector('#type input[type="radio"]:checked').value;
 		var name = document.getElementById('name').value;
 		if (type.length == 0) {
 			return;
@@ -92,22 +99,41 @@
 		if (eventType == 'new') {
 			responseEvent = await saveResp.json();
 			xid = responseEvent['xid'];
-			var sel = document.getElementById('saved_selection');
-			sel.add(new Option(name, xid));
-			sel.selectedIndex = sel.length - 1;
+			var connections = document.querySelector('#connections .dropdown_content');
+			var newInput = document.createElement('input');
+			newInput.setAttribute('id', xid);
+			newInput.setAttribute('name', 'connection');
+			newInput.setAttribute('type', 'radio');
+			newInput.setAttribute('value', xid);
+			newInput.setAttribute('checked', true);
+			var newLabel = document.createElement('label');
+			newLabel.setAttribute('for', xid);
+			newLabel.innerText = name;
+			connections.appendChild(newInput);
+			connections.appendChild(newLabel);
 		}
 		if (eventType == 'update') {
-			var sel = document.getElementById('saved_selection');
-			sel.remove(sel.selectedIndex);
-			sel.add(new Option(name, xid));
-			sel.selectedIndex = sel.length - 1;
+			var connections = document.querySelector('#connections .dropdown_content');
+			var newInput = document.createElement('input');
+			newInput.setAttribute('id', xid);
+			newInput.setAttribute('name', 'connection');
+			newInput.setAttribute('type', 'radio');
+			newInput.setAttribute('value', xid);
+			var newLabel = document.createElement('label');
+			newLabel.setAttribute('for', xid);
+			newLabel.innerText = name;
+			connections.removeChild(document.querySelector(`#${xid}`));
+			connections.removeChild(document.querySelector(`label[for=${xid}]`));
+			connections.appendChild(newInput);
+			connections.appendChild(newLabel);
 		}
 	}
 </script>
 
 <script>
 	async function deleteConnection() {
-		var xid = document.getElementById('xid').value;
+		var checked = document.querySelector('#connections input[type="radio"]:checked');
+		var xid = checked.value;
 		if (xid.length != 32) {
 			return;
 		}
@@ -120,11 +146,11 @@
 			'body': JSON.stringify(deleteEvent),
 			'headers': {'Content-Type': 'application/json'}
 		});
-		var sel = document.getElementById('saved_selection');
-		sel.remove(sel.selectedIndex);
-		document.getElementById('xid').value = '';
 		document.getElementById('name').value = '';
 		window.editor.setValue('');
+		var connections = document.querySelector('#connections .dropdown_content');
+		connections.removeChild(document.querySelector(`#${xid}`));
+		connections.removeChild(document.querySelector(`label[for=${xid}]`));
 	}
 </script
 
@@ -164,10 +190,9 @@
 	</div>
 
 	<div id="control_panel">
-		<input type="hidden" id="xid" name="xid" value="">
 		<label for="name">name:</label>
 		<input id="name" type="text" name="name" value="" minlength="4" maxlength="32" required/>
-		<div class="dropdown">
+		<div id="type" class="dropdown">
 			<button class="dropbutton">
 				<div>type <i class="material-icons">expand_more</i></div>
 			</button>
@@ -180,7 +205,7 @@
 				<label for="Drill">Drill</label>
 			</div>
 		</div>
-		<div class="dropdown">
+		<div id="editors" class="dropdown">
 			<button class="dropbutton">
 				<div>editors <i class="material-icons">expand_more</i></div>
 			</button>
@@ -191,7 +216,7 @@
 				{% endfor %}
 			</div>
 		</div>
-		<div class="dropdown">
+		<div id="readers" class="dropdown">
 			<button class="dropbutton">
 				<div>readers <i class="material-icons">expand_more</i></div>
 			</button>
@@ -204,13 +229,13 @@
 		</div>
 		<input type="button" value="save" onclick="saveConnection();">
 		<input type="button" value="delete" onclick="deleteConnection();">
-		<div class="dropdown">
+		<div id="connections" class="dropdown" onmouseleave="savedSelectionChanged();">
 			<button class="dropbutton">
 				<div>connections</span> <i class="material-icons">expand_more</i></div>
 			</button>
 			<div class="dropdown_content">
-				<input name="connection" id="" type="radio" value="" checked>
-				<label for=""></label>
+				<input name="connection" id="new_connection" type="radio" value="" checked>
+				<label for="new_connection">new_connection</label>
 				{% for conn in connections %}
 				<input name="connection" id="{{ conn['xid'] }}" type="radio" value="{{ conn['xid'] }}">
 				<label for="{{ conn['xid'] }}">{{ conn['name'] }}</label>

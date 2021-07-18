@@ -30,13 +30,14 @@ async def connection(request):
 		if request.method == 'POST':
 			event = await request.json()
 			logging.debug(f'Connection event posted: {event}')
-			event['configuration'] = fernet.encrypt(event['configuration'].encode()).decode()
 			if event['event_type'] == 'new':
+				event['configuration'] = fernet.encrypt(event['configuration'].encode()).decode()
 				xid = 'x' + secrets.token_hex(16)[1:]
 				event['xid'] = xid
 				record = tuple([xid, user_xid] + [event[k] for k in FORM_FIELDS])
 				result = await pgconn.copy_records_to_table('connection', records=[record], columns=columns)
 			elif event['event_type'] == 'update':
+				event['configuration'] = fernet.encrypt(event['configuration'].encode()).decode()
 				await pgconn.execute('''
 					update connection
 					set name = $3, configuration = $4, updated = timezone('utc', now())
