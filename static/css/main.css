@@ -84,7 +84,22 @@ input[type=checkbox] {
 	color: #ccc;
 }
 input[type=checkbox]:checked {
-	background: repeating-linear-gradient(-45deg, #ccc, #fff 2px, #444 2px, #222 4px);
+	background: conic-gradient(#fff 0.25turn, #000 0.25turn 0.5turn, #fff 0.5turn 0.75turn, #000 0.75turn) top left / 25% 25% repeat;
+	border: 2px solid #ccc;
+}
+input[type=radio] {
+	appearance: none;
+	border-radius: 4px;
+	border: 2px solid #ccc;
+	cursor: pointer;
+	height: 18px;
+	width: 18px;
+	content: "";
+	background-color: #222;
+	color: #ccc;
+}
+input[type=radio]:checked {
+	background: conic-gradient(#fff 0.25turn, #000 0.25turn 0.5turn, #fff 0.5turn 0.75turn, #000 0.75turn) top left / 25% 25% repeat;
 	border: 2px solid #ccc;
 }
 input[type=range] {
@@ -112,3 +127,60 @@ input[type=range]::focus {
 	color: #000;
 	background: #aaa;
 }
+
+.dropdown {
+	float: left;
+	overflow: hidden;
+	background: #333;
+	margin-left: 6px;
+	margin-top: 1px;
+	margin-bottom: 1px;
+}
+
+.dropdown .dropbutton {
+	border: 1px solid #999;
+	outline: none;
+	color: #ccc;
+	padding: 0px 0px;
+	margin: 0px;
+	text-align: center;
+	vertical-align: middle;
+}
+.dropdown .dropbutton div {
+	transform: translateY(-3px);
+	margin-left: 6px;
+}
+.dropdown:hover .dropbutton {
+	background-color: #666;
+}
+.dropdown_content {
+	display: none;
+	position: absolute;
+	background-color: #333;
+	min-width: 6em;
+	box-shadow: 2px 4px rgba(0,0,0,0.2);
+	z-index: 100;
+	transform: translateY(-1px);
+}
+.dropdown_content input {
+	float: none;
+	text-decoration: none;
+	padding-top: 4px;
+	padding-left: 4px;
+}
+.dropdown_content label {
+	float: none;
+	color: #ccc;
+	padding-bottom: 4px;
+	padding-right: 4px;
+	text-decoration: none;
+	text-align: center;
+}
+.dropdown_content label:click {
+	background-color: #333;
+}
+.dropdown:hover .dropdown_content {
+	display: grid;
+	grid-template-columns: 1fr auto;
+}
+

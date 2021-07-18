@@ -1,4 +1,5 @@
 {% include "header.html" %}
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 	<link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/editor/editor.main.css">
 <style>
 #main {
@@ -20,8 +21,113 @@
 	width: 99%;
 	height: 30px;
 	border: 1px solid #555;
+	overflow: hidden;
+}
+#control_panel input, label {
+	float: left;
+	text-align: center;
+	vertical-align: middle;
+	text-decoration: none;
+	margin-left: 6px;
+}
+#control_panel label {
+	transform: translateY(6px);
+}
+.material-icons {
+	font-size: 18px;
+	transform: translateY(4px);
 }
 </style>
+
+<script>
+	async function savedSelectionChanged() {
+		var sel = document.getElementById('saved_selection');
+		var xid = sel.value;
+		var config = "";
+		var type = "";
+		if (xid.length == 32) {
+			var connJson = await (await fetch('/connection?xid=' + xid)).json();
+			config = connJson['configuration'];
+			type = connJson['type'];
+		}
+		document.getElementById('xid').value = xid;
+		if (type.length > 0) {
+			document.getElementById('type').value = type;
+		}
+		var name = sel.options[sel.selectedIndex].text;
+		document.getElementById('name').value = name;
+		window.editor.setValue(config);
+	}
+</script>
+
+<script>
+	async function saveConnection() {
+		var xid = document.getElementById('xid').value;
+		var configuration = window.editor.getValue();
+		var type = document.getElementById('type').value;
+		var name = document.getElementById('name').value;
+		if (type.length == 0) {
+			return;
+		}
+		if ((name.length < 4) || (name.length > 32)) {
+			return;
+		}
+		if (xid.length == 0) {
+			var eventType = 'new';
+		} else {
+			var eventType = 'update';
+		}
+		var saveEvent = {
+			'event_type': eventType,
+			'xid': xid,
+			'configuration': configuration,
+			'name': name,
+			'type': type
+		};
+		var saveResp = await fetch('/connection', {
+			'method': 'POST',
+			'body': JSON.stringify(saveEvent),
+			'headers': {'Content-Type': 'application/json'}
+		});
+		if (eventType == 'new') {
+			responseEvent = await saveResp.json();
+			xid = responseEvent['xid'];
+			var sel = document.getElementById('saved_selection');
+			sel.add(new Option(name, xid));
+			sel.selectedIndex = sel.length - 1;
+		}
+		if (eventType == 'update') {
+			var sel = document.getElementById('saved_selection');
+			sel.remove(sel.selectedIndex);
+			sel.add(new Option(name, xid));
+			sel.selectedIndex = sel.length - 1;
+		}
+	}
+</script>
+
+<script>
+	async function deleteConnection() {
+		var xid = document.getElementById('xid').value;
+		if (xid.length != 32) {
+			return;
+		}
+		var deleteEvent = {
+			'event_type': 'delete',
+			'xid': xid
+		};
+		await fetch('/connection', {
+			'method': 'POST',
+			'body': JSON.stringify(deleteEvent),
+			'headers': {'Content-Type': 'application/json'}
+		});
+		var sel = document.getElementById('saved_selection');
+		sel.remove(sel.selectedIndex);
+		document.getElementById('xid').value = '';
+		document.getElementById('name').value = '';
+		window.editor.setValue('');
+	}
+</script
+
 </head>
 <body>
 
@@ -55,134 +161,62 @@
 				wordWrap: 'on'
 			});
 		</script>
-
 	</div>
 
 	<div id="control_panel">
-
-		<script>
-			async function savedSelectionChanged() {
-				var sel = document.getElementById('saved_selection');
-				var xid = sel.value;
-				var config = "";
-				var type = "";
-				if (xid.length == 32) {
-					var connJson = await (await fetch('/connection?xid=' + xid)).json();
-					config = connJson['configuration'];
-					type = connJson['type'];
-				}
-				document.getElementById('xid').value = xid;
-				if (type.length > 0) {
-					document.getElementById('type').value = type;
-				}
-				var name = sel.options[sel.selectedIndex].text;
-				document.getElementById('name').value = name;
-				window.editor.setValue(config);
-			}
-		</script>
-
-		<script>
-			async function saveConnection() {
-				var xid = document.getElementById('xid').value;
-				var configuration = window.editor.getValue();
-				var type = document.getElementById('type').value;
-				var name = document.getElementById('name').value;
-				if (type.length == 0) {
-					return;
-				}
-				if ((name.length < 4) || (name.length > 32)) {
-					return;
-				}
-				if (xid.length == 0) {
-					var eventType = 'new';
-				} else {
-					var eventType = 'update';
-				}
-				var saveEvent = {
-					'event_type': eventType,
-					'xid': xid,
-					'configuration': configuration,
-					'name': name,
-					'type': type
-				};
-				var saveResp = await fetch('/connection', {
-					'method': 'POST',
-					'body': JSON.stringify(saveEvent),
-					'headers': {'Content-Type': 'application/json'}
-				});
-				if (eventType == 'new') {
-					responseEvent = await saveResp.json();
-					xid = responseEvent['xid'];
-					var sel = document.getElementById('saved_selection');
-					sel.add(new Option(name, xid));
-					sel.selectedIndex = sel.length - 1;
-				}
-				if (eventType == 'update') {
-					var sel = document.getElementById('saved_selection');
-					sel.remove(sel.selectedIndex);
-					sel.add(new Option(name, xid));
-					sel.selectedIndex = sel.length - 1;
-				}
-			}
-		</script>
-
-		<script>
-			async function deleteConnection() {
-				var xid = document.getElementById('xid').value;
-				if (xid.length != 32) {
-					return;
-				}
-				var deleteEvent = {
-					'event_type': 'delete',
-					'xid': xid
-				};
-				await fetch('/connection', {
-					'method': 'POST',
-					'body': JSON.stringify(deleteEvent),
-					'headers': {'Content-Type': 'application/json'}
-				});
-				var sel = document.getElementById('saved_selection');
-				sel.remove(sel.selectedIndex);
-				document.getElementById('xid').value = '';
-				document.getElementById('name').value = '';
-				window.editor.setValue('');
-			}
-		</script>
-
-
-		<form name="control_form" action="">
-			<input type="hidden" id="xid" name="xid" value="">
-			<label for="name">name:</label>
-			<input id="name" type="text" name="name" value="" minlength="4" maxlength="32" required/>
-			<label for="type">type:</label>
-			<select id="type" name="type" required>
-				<option value="PostgreSQL">PostgreSQL</option>
-				<option value="MySQL">MySQL</option>
-				<option value="Drill">MySQL</option>
-			</select>
-			<label for="editors_selection">editors:</label>
-			<select id="editors_selection" style="vertical-align: bottom;">
+		<input type="hidden" id="xid" name="xid" value="">
+		<label for="name">name:</label>
+		<input id="name" type="text" name="name" value="" minlength="4" maxlength="32" required/>
+		<div class="dropdown">
+			<button class="dropbutton">
+				<div>type <i class="material-icons">expand_more</i></div>
+			</button>
+			<div class="dropdown_content">
+				<input name="type" id="PostgreSQL" type="radio" value="PostgreSQL">
+				<label for="PostgreSQL">PostgreSQL</label>
+				<input name="type" id="MySQL" type="radio" value="MySQL">
+				<label for="MySQL">MySQL</label>
+				<input name="type" id="Drill" type="radio" value="Drill">
+				<label for="Drill">Drill</label>
+			</div>
+		</div>
+		<div class="dropdown">
+			<button class="dropbutton">
+				<div>editors <i class="material-icons">expand_more</i></div>
+			</button>
+			<div class="dropdown_content">
 				{% for team in teams %}
-				<option value="{{ team['xid'] }}">{{ team['name'] }}</option>
+				<input id="editor_{{ team['xid'] }}" type="checkbox" value="editor_{{ team['xid'] }}">
+				<label for="editor_{{ team['xid'] }}">{{ team['name'] }}</label>
 				{% endfor %}
-			</select>
-			<label for="readers_selection">readers:</label>
-			<select id="readers_selection" style="vertical-align: bottom;">
+			</div>
+		</div>
+		<div class="dropdown">
+			<button class="dropbutton">
+				<div>readers <i class="material-icons">expand_more</i></div>
+			</button>
+			<div class="dropdown_content">
 				{% for team in teams %}
-				<option value="{{ team['xid'] }}">{{ team['name'] }}</option>
+				<input id="reader_{{ team['xid'] }}" type="checkbox" value="reader_{{ team['xid'] }}">
+				<label for="reader_{{ team['xid'] }}">{{ team['name'] }}</label>
 				{% endfor %}
-			</select>
-			<input type="button" value="save" onclick="saveConnection();">
-			<input type="button" value="delete" onclick="deleteConnection();">
-			<label for="saved_selection">connections:</label>
-			<select name="saved_selection" id="saved_selection" onclick="savedSelectionChanged();">
-				<option value="" selected></option>
+			</div>
+		</div>
+		<input type="button" value="save" onclick="saveConnection();">
+		<input type="button" value="delete" onclick="deleteConnection();">
+		<div class="dropdown">
+			<button class="dropbutton">
+				<div>connections</span> <i class="material-icons">expand_more</i></div>
+			</button>
+			<div class="dropdown_content">
+				<input name="connection" id="" type="radio" value="" checked>
+				<label for=""></label>
 				{% for conn in connections %}
-				<option value="{{ conn['xid'] }}">{{ conn['name'] }}</option>
+				<input name="connection" id="{{ conn['xid'] }}" type="radio" value="{{ conn['xid'] }}">
+				<label for="{{ conn['xid'] }}">{{ conn['name'] }}</label>
 				{% endfor %}
-			</select>
-		</form>
-
+			</div>
+		</div>
 	</div>
 </div>
 
