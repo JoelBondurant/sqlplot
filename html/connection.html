@@ -52,7 +52,7 @@
 		var type = '';
 		var name = '';
 		if (xid.length == 32) {
-			var conn = await (await fetch('/connection?xid=' + xid)).json();
+			var conn = await (await fetch(`/connection?xid=${xid}`)).json();
 			config = conn['configuration'];
 			type = conn['type'];
 			name = conn['name'];
