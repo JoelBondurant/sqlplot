@@ -5,14 +5,9 @@
 #main {
 	display: grid;
 }
-#nav_panel {
-	width: 99%;
-	height: 30px;
-	border: 1px solid #555;
-}
 #configuration_panel {
 	width: 99%;
-	height: 300px;
+	height: calc(90vh);
 	border: 1px solid #555;
 	resize: vertical;
 	overflow: hidden;
@@ -174,38 +169,19 @@
 <body>
 
 <div id="main">
-	<div id="nav_panel">
-		<button onclick="window.location.assign('/')">home</button>
-		<button onclick="window.location.assign('/query')">query</button>
-		<button onclick="window.location.assign('/view')">view</button>
-		<button onclick="window.location.assign('/dashboard')">dashboard</button>
-		<button onclick="window.location.assign('/team')">team</button>
-	</div>
-
-	<div id="configuration_panel" autofocus>
-		<script>
-			var require = {"paths":{"vs":"https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs"}};
-		</script>
-		<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/loader.js"></script>
-		<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/editor/editor.main.nls.js"></script>
-		<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/editor/editor.main.js"></script>
-		<script>
-			window.editor = monaco.editor.create(document.getElementById('configuration_panel'), {
-				value: '',
-				language: 'json',
-				fontSize: 14,
-				scrollbar: {
-					vertical: 'auto',
-					horizontal: 'auto'
-				},
-				theme: 'vs-dark',
-				automaticLayout: true,
-				wordWrap: 'on'
-			});
-		</script>
-	</div>
-
 	<div id="control_panel">
+		<div id="nav" class="dropdown">
+			<button class="dropbutton">
+				<div><i class="material-icons">menu_open</i></div>
+			</button>
+			<div class="dropdown_content" >
+				<a href="/query" title="query"><i style="font-size:24px;" class="material-icons">question_answer</i></a><div></div>
+				<a href="/view" title="view"><i style="font-size:24px;" class="material-icons">area_chart</i></a><div></div>
+				<a href="/dashboard" title="dashboard"><i style="font-size:24px;" class="material-icons">dashboard</i></a><div></div>
+				<a href="/team" title="team"><i style="font-size:24px;" class="material-icons">groups</i></a><div></div>
+				<a href="/logout" title="logout"><i style="font-size:24px;" class="material-icons">logout</i></a><div></div>
+			</div>
+		</div>
 		<label for="name">name:</label>
 		<input id="name" type="text" name="name" value="" minlength="4" maxlength="32" required/>
 		<div id="type" class="dropdown">
@@ -259,6 +235,30 @@
 			</div>
 		</div>
 	</div>
+
+	<div id="configuration_panel" autofocus>
+		<script>
+			var require = {"paths":{"vs":"https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs"}};
+		</script>
+		<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/loader.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/editor/editor.main.nls.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/editor/editor.main.js"></script>
+		<script>
+			window.editor = monaco.editor.create(document.getElementById('configuration_panel'), {
+				value: '',
+				language: 'json',
+				fontSize: 14,
+				scrollbar: {
+					vertical: 'auto',
+					horizontal: 'auto'
+				},
+				theme: 'vs-dark',
+				automaticLayout: true,
+				wordWrap: 'on'
+			});
+		</script>
+	</div>
+
 </div>
 
 </body>
