@@ -1,4 +1,5 @@
 {% include "header.html" %}
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <style>
 #nav_panel {
 	width: 99%;
@@ -25,12 +26,19 @@
 <div id="main">
 	<div id="nav_panel">
 		{% if login %}
-			<button onclick="window.location.assign('/connection')">connection</button>
-			<button onclick="window.location.assign('/query')">query</button>
-			<button onclick="window.location.assign('/view')">view</button>
-			<button onclick="window.location.assign('/dashboard')">dashboard</button>
-			<button onclick="window.location.assign('/team')">team</button>
-			<button onclick="window.location.assign('/logout')">logout</button>
+			<div id="nav" class="dropdown">
+				<button class="dropbutton">
+					<div><i class="material-icons">menu_open</i></div>
+				</button>
+				<div class="dropdown_content" >
+					<a href="/connection" title="connection"><i style="font-size:24px;" class="material-icons">cable</i></a><div></div>
+					<a href="/query" title="query"><i style="font-size:24px;" class="material-icons">question_answer</i></a><div></div>
+					<a href="/view" title="view"><i style="font-size:24px;" class="material-icons">area_chart</i></a><div></div>
+					<a href="/dashboard" title="dashboard"><i style="font-size:24px;" class="material-icons">dashboard</i></a><div></div>
+					<a href="/team" title="team"><i style="font-size:24px;" class="material-icons">groups</i></a><div></div>
+					<a href="/logout" title="logout"><i style="font-size:24px;" class="material-icons">logout</i></a><div></div>
+				</div>
+			</div>
 		{% else %}
 			<button onclick="window.location.assign('/login')">login</button>
 			<button onclick="window.location.assign('/signup')">signup</button>
