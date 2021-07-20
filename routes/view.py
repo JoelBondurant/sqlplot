@@ -55,7 +55,7 @@ async def view(request):
 				xid = event['xid']
 				await pgconn.execute('''
 					delete from authorization
-					where object_type = 'connection' and object_xid = $1;
+					where object_type = 'view' and object_xid = $1;
 				''', xid)
 				await pgconn.execute('''
 					delete from view where xid = $1 and user_xid = $2;
@@ -72,7 +72,7 @@ async def view(request):
 					and user_xid = $2
 				''', xid, user_xid, timeout=4))
 			auth = await pgconn.fetch(f'''
-				select type, team_xid from "authorization" where object_type = 'connection' and object_xid = $1;
+				select type, team_xid from "authorization" where object_type = 'view' and object_xid = $1;
 			''', xid, timeout=4)
 			editors = [x[1] for x in auth if x[0] == 'editor']
 			readers = [x[1] for x in auth if x[0] == 'reader']
