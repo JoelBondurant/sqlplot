@@ -98,9 +98,11 @@ async function bindView(vid, xvid, config={}) {
 
 		<script>
 			async function saveDashboard() {
-				var xid = document.getElementById('xid').value;
-				var configuration = window.editor.getValue();
+				var xid = document.querySelector('#dashboards input:checked').value;
 				var name = document.getElementById('name').value;
+				var configuration = window.editor.getValue();
+				var editors = Array.from(document.querySelectorAll('#editors input:checked')).map(x=>x.value.slice(7));
+				var readers = Array.from(document.querySelectorAll('#readers input:checked')).map(x=>x.value.slice(7));
 				if ((name.length < 4) || (name.length > 32)) {
 					return;
 				}
@@ -113,7 +115,9 @@ async function bindView(vid, xvid, config={}) {
 					'event_type': eventType,
 					'xid': xid,
 					'name': name,
-					'configuration': configuration
+					'configuration': configuration,
+					'editors': editors,
+					'readers': readers
 				};
 				var saveResp = await fetch('/dashboard', {
 					'method': 'POST',
@@ -123,15 +127,33 @@ async function bindView(vid, xvid, config={}) {
 				if (eventType == 'new') {
 					responseEvent = await saveResp.json();
 					xid = responseEvent['xid'];
-					var sel = document.getElementById('saved_selection');
-					sel.add(new Option(name, xid));
-					sel.selectedIndex = sel.length - 1;
+					var dashboards = document.querySelector('#dashboards .dropdown_content');
+					var newInput = document.createElement('input');
+					newInput.setAttribute('id', xid);
+					newInput.setAttribute('name', 'dashboard');
+					newInput.setAttribute('type', 'radio');
+					newInput.setAttribute('value', xid);
+					newInput.setAttribute('checked', true);
+					var newLabel = document.createElement('label');
+					newLabel.setAttribute('for', xid);
+					newLabel.innerText = name;
+					dashboards.appendChild(newInput);
+					dashboards.appendChild(newLabel);
 				}
 				if (eventType == 'update') {
-					var sel = document.getElementById('saved_selection');
-					sel.remove(sel.selectedIndex);
-					sel.add(new Option(name, xid));
-					sel.selectedIndex = sel.length - 1;
+					var dashboards = document.querySelector('#dashboards .dropdown_content');
+					var newInput = document.createElement('input');
+					newInput.setAttribute('id', xid);
+					newInput.setAttribute('name', 'dashboard');
+					newInput.setAttribute('type', 'radio');
+					newInput.setAttribute('value', xid);
+					var newLabel = document.createElement('label');
+					newLabel.setAttribute('for', xid);
+					newLabel.innerText = name;
+					dashboards.removeChild(document.querySelector(`#${xid}`));
+					dashboards.removeChild(document.querySelector(`label[for=${xid}]`));
+					dashboards.appendChild(newInput);
+					dashboards.appendChild(newLabel);
 				}
 			}
 		</script>
@@ -186,9 +208,30 @@ async function bindView(vid, xvid, config={}) {
 					<a href="/logout" title="logout"><i style="font-size:24px;" class="material-icons">logout</i></a><div></div>
 				</div>
 			</div>
-
 			<label for="name">name:</label>
 			<input id="name" type="text" name="name" value="" minlength="4" maxlength="32" required/>
+			<div id="editors" class="dropdown">
+				<button class="dropbutton">
+					<div>editors <i class="material-icons">expand_more</i></div>
+				</button>
+				<div class="dropdown_content">
+					{% for team in teams %}
+					<input id="editor_{{ team['xid'] }}" type="checkbox" value="editor_{{ team['xid'] }}">
+					<label for="editor_{{ team['xid'] }}">{{ team['name'] }}</label>
+					{% endfor %}
+				</div>
+			</div>
+			<div id="readers" class="dropdown">
+				<button class="dropbutton">
+					<div>readers <i class="material-icons">expand_more</i></div>
+				</button>
+				<div class="dropdown_content">
+					{% for team in teams %}
+					<input id="reader_{{ team['xid'] }}" type="checkbox" value="reader_{{ team['xid'] }}">
+					<label for="reader_{{ team['xid'] }}">{{ team['name'] }}</label>
+					{% endfor %}
+				</div>
+			</div>
 			<input type="button" value="save" onclick="saveDashboard();">
 			<input type="button" value="delete" onclick="deleteDashboard();">
 			<div id="dashboards" class="dropdown" onmouseleave="savedSelectionChanged();">
