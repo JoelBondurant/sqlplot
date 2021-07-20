@@ -1,4 +1,5 @@
 {% include "header.html" %}
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 	<script src="https://cdn.jsdelivr.net/npm/d3@7.0.0"></script>
 	<script src="https://cdn.jsdelivr.net/npm/vega@5.20.2"></script>
 	<script src="https://cdn.jsdelivr.net/npm/vega-lite@5.1.0"></script>
@@ -35,6 +36,24 @@
 	width: 99%;
 	height: 30px;
 	border: 1px solid #555;
+	overflow: hidden;
+}
+#control_panel input, label {
+	float: left;
+	text-align: center;
+	vertical-align: middle;
+	text-decoration: none;
+	margin-left: 6px;
+}
+#control_panel label {
+	transform: translateY(6px);
+}
+.material-icons {
+	font-size: 18px;
+	transform: translateY(4px);
+}
+.dropdown_content {
+	bottom: 58px;
 }
 </style>
 
@@ -178,21 +197,49 @@
 			}
 		</script>
 
-		<form name="view_form" action="">
+
+		<div id="control_panel">
 			<label for="name">name:</label>
 			<input id="name" type="text" value="" minlength="4" maxlength="32" required/>
-			<input type="hidden" id="xid" name="xid" value="">
+			<div id="editors" class="dropdown">
+				<button class="dropbutton">
+					<div>editors <i class="material-icons">expand_more</i></div>
+				</button>
+				<div class="dropdown_content">
+					{% for team in teams %}
+					<input id="editor_{{ team['xid'] }}" type="checkbox" value="editor_{{ team['xid'] }}">
+					<label for="editor_{{ team['xid'] }}">{{ team['name'] }}</label>
+					{% endfor %}
+				</div>
+			</div>
+			<div id="readers" class="dropdown">
+				<button class="dropbutton">
+					<div>readers <i class="material-icons">expand_more</i></div>
+				</button>
+				<div class="dropdown_content">
+					{% for team in teams %}
+					<input id="reader_{{ team['xid'] }}" type="checkbox" value="reader_{{ team['xid'] }}">
+					<label for="reader_{{ team['xid'] }}">{{ team['name'] }}</label>
+					{% endfor %}
+				</div>
+			</div>
 			<input type="button" value="save" onclick="saveView();">
 			<input type="button" value="delete" onclick="deleteView();">
-			<label for="saved_selection">views:</label>
-			<select id="saved_selection" onclick="savedSelectionChanged();">
-				<option value="" selected></option>
-				{% for view in views %}
-				<option value="{{ view['xid'] }}">{{ view['name'] }}</option>
-				{% endfor %}
-			</select>
+			<div id="views" class="dropdown" onmouseleave="savedSelectionChanged();">
+				<button class="dropbutton">
+					<div>views <i class="material-icons">expand_more</i></div>
+				</button>
+				<div class="dropdown_content">
+					<input name="view" id="new_view" type="radio" value="" checked>
+					<label for="new_view">new_view</label>
+					{% for view in views %}
+					<input name="view" id="{{ view['xid'] }}" type="radio" value="{{ view['xid'] }}">
+					<label for="{{ view['xid'] }}">{{ view['name'] }}</label>
+					{% endfor %}
+				</div>
+			</div>
 			<input type="button" value="xid" onclick="copyXid();">
-		</form>
+		</div>
 	</div>
 </div>
 

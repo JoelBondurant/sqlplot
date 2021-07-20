@@ -42,13 +42,15 @@ async def connection(request):
 				event['xid'] = xid
 				record = tuple([xid, user_xid] + [event[k] for k in FORM_FIELDS])
 				result = await pgconn.copy_records_to_table('connection', records=[record], columns=columns)
-				auth = [('editor', txid, 'connection', xid) for txid in event['editors']]
-				auth += [('reader', txid, 'connection', xid) for txid in event['readers']]
+				editors = [('editor', txid, 'connection', xid) for txid in event['editors']]
+				readers += [('reader', txid, 'connection', xid) for txid in event['readers']]
+				auth = editors + readers
 				await pgconn.execute('''
 					delete from "authorization"
 					where object_type = 'connection' and object_xid = $1;
 				''', xid)
-				await pgconn.copy_records_to_table('authorization', records=auth, columns=authorization.COLUMNS)
+				if len(auth) > 0:
+					await pgconn.copy_records_to_table('authorization', records=auth, columns=authorization.COLUMNS)
 			elif event['event_type'] == 'update':
 				event['configuration'] = FERNET_KEY.encrypt(event['configuration'].encode()).decode()
 				xid = event['xid']
@@ -64,17 +66,19 @@ async def connection(request):
 				editors = [('editor', txid, 'connection', xid) for txid in event['editors']]
 				readers = [('reader', txid, 'connection', xid) for txid in event['readers']]
 				auth = editors + readers
-				await pgconn.copy_records_to_table('authorization', records=auth, columns=authorization.COLUMNS)
+				if len(auth) > 0:
+					await pgconn.copy_records_to_table('authorization', records=auth, columns=authorization.COLUMNS)
 			elif event['event_type'] == 'delete':
+				xid = event['xid']
 				await pgconn.execute('''
 					delete from authorization
 					where object_type = 'connection' and object_xid = $1;
-				''', event['xid'])
+				''', xid)
 				await pgconn.execute('''
 					delete from connection
 					where xid = $1 and user_xid = $2;
-				''', event['xid'], user_xid)
-			return aiohttp.web.json_response({'xid': event['xid']})
+				''', xid, user_xid)
+			return aiohttp.web.json_response({'xid': xid})
 		# GET:
 		rquery = dict(request.query)
 		if 'xid' in rquery:
