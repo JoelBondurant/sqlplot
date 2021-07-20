@@ -33,28 +33,27 @@ async def query(request):
 				record = tuple([xid, user_xid] + [event[k] for k in FORM_FIELDS])
 				logging.debug(f'Record: {record}')
 				result = await pgconn.copy_records_to_table('query', records=[record], columns=columns)
-				event = {
-					'event_type': 'new',
-					'xid': xid,
-				}
-				auth = [('editor', txid, 'query', xid) for txid in event['editors']]
-				auth += [('reader', txid, 'query', xid) for txid in event['readers']]
+				editors = [('editor', txid, 'query', xid) for txid in event['editors']]
+				readers = [('reader', txid, 'query', xid) for txid in event['readers']]
+				auth = editors + readers
 				await pgconn.execute('''
 					delete from "authorization"
 					where object_type = 'query' and object_xid = $1;
 				''', xid)
-				await pgconn.copy_records_to_table('authorization', records=auth, columns=authorization.COLUMNS)
+				if len(auth) > 0:
+					await pgconn.copy_records_to_table('authorization', records=auth, columns=authorization.COLUMNS)
+				event = {
+					'event_type': 'new',
+					'xid': xid,
+				}
 				redis.publish_json('query', event)
 			elif event['event_type'] == 'update':
+				xid = event['xid']
 				await pgconn.execute('''
 					update query
 					set name = $3, query_text = $4, updated = timezone('utc', now())
 					where xid = $1 and user_xid = $2;
 				''', event['xid'], user_xid, event['name'], event['query_text'])
-				event = {
-					'event_type': 'update',
-					'xid': event['xid'],
-				}
 				await pgconn.execute('''
 					delete from "authorization"
 					where object_type = 'query' and object_xid = $1;
@@ -62,17 +61,23 @@ async def query(request):
 				editors = [('editor', txid, 'query', xid) for txid in event['editors']]
 				readers = [('reader', txid, 'query', xid) for txid in event['readers']]
 				auth = editors + readers
-				await pgconn.copy_records_to_table('authorization', records=auth, columns=authorization.COLUMNS)
+				if len(auth) > 0:
+					await pgconn.copy_records_to_table('authorization', records=auth, columns=authorization.COLUMNS)
+				event = {
+					'event_type': 'update',
+					'xid': xid,
+				}
 				redis.publish_json('query', event)
 			elif event['event_type'] == 'delete':
+				xid = event['xid']
 				await pgconn.execute('''
 					delete from authorization
 					where object_type = 'query' and object_xid = $1;
-				''', event['xid'])
+				''', xid)
 				await pgconn.execute('''
 					delete from query where xid = $1 and user_xid = $2;
-				''', event['xid'], user_xid)
-			return aiohttp.web.json_response({'xid': event['xid']})
+				''', xid, user_xid)
+			return aiohttp.web.json_response({'xid': xid})
 		#GET:
 		rquery = dict(request.query)
 		if 'xid' in rquery:
