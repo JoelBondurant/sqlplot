@@ -1,4 +1,5 @@
 {% include "header.html" %}
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 	<script src="https://cdn.jsdelivr.net/npm/d3@7.0.0"></script>
 	<script src="https://cdn.jsdelivr.net/npm/vega@5.20.2"></script>
 	<script src="https://cdn.jsdelivr.net/npm/vega-lite@5.1.0"></script>
@@ -12,30 +13,25 @@ function html(html) {
 	dashboard().innerHTML = html;
 }
 async function bindView(vid, xvid, config={}) {
-	var spec = JSON.parse(await (await fetch('/view?xid='+xvid)).json());
+	var view = await (await fetch('/view?xid='+xvid)).json();
 	var baseConfig = {actions:false, theme:'dark'};
 	var embedConfig = {...baseConfig, ...config};
-	return vegaEmbed('#'+vid, spec, embedConfig);
+	return vegaEmbed('#'+vid, JSON.parse(view['configuration']), embedConfig);
 }
 </script>
 <style>
 #main {
 	display: grid;
 }
-#nav_panel {
-	width: 99%;
-	height: 30px;
-	border: 1px solid #555;
-}
 #wrapper {
 	display: grid;
 	grid-template-columns: 1fr 7fr;
-	height: calc(90vh);
+	height: calc(95vh);
 	width: calc(99vw);
 }
 #configuration_panel {
 	width: calc(40vw);
-	height: calc(88vh);
+	height: calc(94vh);
 	border: 1px solid #555;
 	resize: horizontal;
 	overflow: hidden;
@@ -48,65 +44,53 @@ async function bindView(vid, xvid, config={}) {
 	width: 99%;
 	height: 30px;
 	border: 1px solid #555;
+	overflow: hidden;
+}
+#control_panel input, label {
+	float: left;
+	text-align: center;
+	vertical-align: middle;
+	text-decoration: none;
+	margin-left: 6px;
+}
+#control_panel label {
+	transform: translateY(6px);
+}
+.material-icons {
+	font-size: 18px;
+	transform: translateY(4px);
 }
 </style>
 </head>
 <body>
 <div id="main">
 
-	<div id="nav_panel">
-		<button onclick="window.location.assign('/')">home</button>
-		<button onclick="window.location.assign('/connection')">connection</button>
-		<button onclick="window.location.assign('/query')">query</button>
-		<button onclick="window.location.assign('/view')">view</button>
-		<button onclick="window.location.assign('/team')">team</button>
-	</div>
-
-	<div id="wrapper">
-		<div id="configuration_panel"
-			onclick="
-				var configuration = window.editor.getValue();
-				let configurationFunc = new Function('(async function(){'+configuration+'})();');
-				configurationFunc();
-			"
-			 autofocus>
-			<script>
-				var require = {"paths":{"vs":"https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs"}};
-			</script>
-			<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/loader.js"></script>
-			<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/editor/editor.main.nls.js"></script>
-			<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/editor/editor.main.js"></script>
-			<script>
-				window.editor = monaco.editor.create(document.getElementById('configuration_panel'), {
-					value: '',
-					language: 'javascript',
-					fontSize: 14,
-					scrollbar: {
-						vertical: 'auto',
-						horizontal: 'auto'
-					},
-					theme: 'vs-dark',
-					automaticLayout: true,
-					wordWrap: 'on'
-				});
-			</script>
-		</div>
-
-		<div id="dashboard_panel"></div>
-	</div>
-
 	<div id="control_panel">
 
 		<script>
 		async function savedSelectionChanged() {
-			var sel = document.getElementById('saved_selection');
-			var xid = sel.value;
-			var configuration = "";
-			if (xid.length == 32) {
-				configuration = await (await fetch('/dashboard?xid=' + xid)).json();
+			var checked = document.querySelector('#dashboards input:checked');
+			if (checked == null) {
+				document.querySelector('#new_dashboard').checked = true;
+				var xid = '';
+			} else {
+				var xid = checked.value;
 			}
-			document.getElementById('xid').value = xid;
-			var name = sel.options[sel.selectedIndex].text;
+			var name = '';
+			var configuration = '';
+			var editors = [];
+			var readers = [];
+			if (xid.length == 32) {
+				dash = await (await fetch(`/dashboard?xid=${xid}`)).json();
+				name = dash['name']
+				configuration = dash['configuration']
+				editors = dash['editors']
+				readers = dash['readers']
+			}
+			var editorInputs = document.querySelectorAll('#editors input[type="checkbox"]');
+			var readerInputs = document.querySelectorAll('#readers input[type="checkbox"]');
+			editorInputs.forEach((inp)=>{inp.checked = editors.includes(inp.value.slice(7))});
+			readerInputs.forEach((inp)=>{inp.checked = readers.includes(inp.value.slice(7))});
 			document.getElementById('name').value = name;
 			window.editor.setValue(configuration);
 		}
@@ -154,7 +138,8 @@ async function bindView(vid, xvid, config={}) {
 
 		<script>
 			async function deleteDashboard() {
-				var xid = document.getElementById('xid').value;
+				var checked = document.querySelector('#dashboards input:checked');
+				var xid = checked.value;
 				if (xid.length != 32) {
 					return;
 				}
@@ -167,17 +152,21 @@ async function bindView(vid, xvid, config={}) {
 					'body': JSON.stringify(deleteEvent),
 					'headers': {'Content-Type': 'application/json'}
 				});
-				var sel = document.getElementById('saved_selection');
-				sel.remove(sel.selectedIndex);
-				document.getElementById('xid').value = '';
 				document.getElementById('name').value = '';
 				window.editor.setValue('');
+				var dashboards = document.querySelector('#dashboards .dropdown_content');
+				dashboards.removeChild(document.querySelector(`#${xid}`));
+				dashboards.removeChild(document.querySelector(`label[for=${xid}]`));
+				var editorInputs = document.querySelectorAll('#editors input[type="checkbox"]');
+				var readerInputs = document.querySelectorAll('#readers input[type="checkbox"]');
+				editorInputs.forEach((inp)=>{inp.checked = false});
+				readerInputs.forEach((inp)=>{inp.checked = false});
 			}
 		</script>
 		
 		<script>
 			async function viewDashboard() {
-				var xid = document.getElementById('xid').value;
+				var xid = document.querySelector('#dashboards input:checked').value;
 				if (xid.length != 32) {
 					return;
 				}
@@ -185,22 +174,74 @@ async function bindView(vid, xvid, config={}) {
 			}
 		</script>
 
-		<form name="dashboard_form" action="">
+			<div id="nav" class="dropdown">
+				<button class="dropbutton">
+					<div><i class="material-icons">menu_open</i></div>
+				</button>
+				<div class="dropdown_content" >
+					<a href="/connection" title="connection"><i style="font-size:24px;" class="material-icons">cable</i></a><div></div>
+					<a href="/query" title="query"><i style="font-size:24px;" class="material-icons">question_answer</i></a><div></div>
+					<a href="/view" title="view"><i style="font-size:24px;" class="material-icons">area_chart</i></a><div></div>
+					<a href="/team" title="team"><i style="font-size:24px;" class="material-icons">groups</i></a><div></div>
+					<a href="/logout" title="logout"><i style="font-size:24px;" class="material-icons">logout</i></a><div></div>
+				</div>
+			</div>
+
 			<label for="name">name:</label>
 			<input id="name" type="text" name="name" value="" minlength="4" maxlength="32" required/>
-			<input type="hidden" id="xid" name="xid" value="">
 			<input type="button" value="save" onclick="saveDashboard();">
 			<input type="button" value="delete" onclick="deleteDashboard();">
-			<label for="saved_selection">dashboards:</label>
-			<select id="saved_selection" onclick="savedSelectionChanged();">
-				<option value="" selected></option>
-				{% for dashboard in dashboards %}
-				<option value="{{ dashboard['xid'] }}">{{ dashboard['name'] }}</option>
-				{% endfor %}
-			</select>
+			<div id="dashboards" class="dropdown" onmouseleave="savedSelectionChanged();">
+				<button class="dropbutton">
+					<div>dashboards <i class="material-icons">expand_more</i></div>
+				</button>
+				<div class="dropdown_content">
+					<input name="dashboard" id="new_dashboard" type="radio" value="" checked>
+					<label for="new_dashboard">new_dashboard</label>
+					{% for dash in dashboards %}
+					<input name="dashboard" id="{{ dash['xid'] }}" type="radio" value="{{ dash['xid'] }}">
+					<label for="{{ dash['xid'] }}">{{ dash['name'] }}</label>
+					{% endfor %}
+				</div>
+			</div>
 			<input type="button" value="view" onclick="viewDashboard();">
-		</form>
+		</div>
 	</div>
+
+	<div id="wrapper">
+		<div id="configuration_panel"
+			onclick="
+				var configuration = window.editor.getValue();
+				let configurationFunc = new Function('(async function(){'+configuration+'})();');
+				configurationFunc();
+			"
+			 autofocus>
+			<script>
+				var require = {"paths":{"vs":"https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs"}};
+			</script>
+			<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/loader.js"></script>
+			<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/editor/editor.main.nls.js"></script>
+			<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/editor/editor.main.js"></script>
+			<script>
+				window.editor = monaco.editor.create(document.getElementById('configuration_panel'), {
+					value: '',
+					language: 'javascript',
+					fontSize: 14,
+					scrollbar: {
+						vertical: 'auto',
+						horizontal: 'auto'
+					},
+					theme: 'vs-dark',
+					automaticLayout: true,
+					wordWrap: 'on'
+				});
+			</script>
+		</div>
+
+		<div id="dashboard_panel"></div>
+	</div>
+
+
 
 </div>
 </body>

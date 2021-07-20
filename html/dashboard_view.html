@@ -12,14 +12,14 @@ function html(html) {
 	dashboard().innerHTML = html;
 }
 async function bindView(vid, xvid, config={}) {
-	var spec = JSON.parse(await (await fetch('/view?xid='+xvid)).json());
+	var view = await (await fetch('/view?xid='+xvid)).json();
 	var baseConfig = {actions:false, theme:'dark'};
 	var embedConfig = {...baseConfig, ...config};
-	return vegaEmbed('#'+vid, spec, embedConfig);
+	return vegaEmbed('#'+vid, JSON.parse(view['configuration']), embedConfig);
 }
 async function dashboardRenderGenerator() {
 	var dashURL = '/dashboard?xid={{xid}}';
-	var dashText = await (await fetch(dashURL)).json();
+	var dashText = (await (await fetch(dashURL)).json())['configuration'];
 	let dashboardRender = new Function('(async function(){'+dashText+'})();');
 	dashboardRender();
 }
