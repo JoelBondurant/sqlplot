@@ -69,7 +69,7 @@
 		var editorInputs = document.querySelectorAll('#editors input[type="checkbox"]');
 		var readerInputs = document.querySelectorAll('#readers input[type="checkbox"]');
 		editorInputs.forEach((inp)=>{inp.checked = editors.includes(inp.value.slice(7))});
-		readerInputs.forEach((inp)=>{inp.checked = editors.includes(inp.value.slice(7))});
+		readerInputs.forEach((inp)=>{inp.checked = readers.includes(inp.value.slice(7))});
 		document.getElementById('name').value = name;
 		window.editor.setValue(config);
 	}
