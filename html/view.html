@@ -53,7 +53,7 @@
 	transform: translateY(4px);
 }
 .dropdown_content {
-	bottom: 58px;
+	bottom: 60px;
 }
 </style>
 
@@ -114,14 +114,28 @@
 	<div id="control_panel">
 		<script>
 		async function savedSelectionChanged() {
-			var sel = document.getElementById('saved_selection');
-			var xid = sel.value;
-			var configuration = "";
-			if (xid.length == 32) {
-				configuration = await (await fetch('/view?xid=' + xid)).json();
+			var checked = document.querySelector('#views input:checked');
+			if (checked == null) {
+				document.querySelector('#new_view').checked = true;
+				var xid = '';
+			} else {
+				var xid = checked.value;
 			}
-			document.getElementById('xid').value = xid;
-			var name = sel.options[sel.selectedIndex].text;
+			var name = '';
+			var configuration = '';
+			var editors = [];
+			var readers = [];
+			if (xid.length == 32) {
+				var view = await (await fetch(`/view?xid=${xid}`)).json();
+				name = view['name'];
+				configuration = view['configuration'];
+				editors = view['editors'];
+				readers = view['readers'];
+			}
+			var editorInputs = document.querySelectorAll('#editors input[type="checkbox"]');
+			var readerInputs = document.querySelectorAll('#readers input[type="checkbox"]');
+			editorInputs.forEach((inp)=>{inp.checked = editors.includes(inp.value.slice(7))});
+			readerInputs.forEach((inp)=>{inp.checked = readers.includes(inp.value.slice(7))});
 			document.getElementById('name').value = name;
 			window.editor.setValue(configuration);
 		}
@@ -129,9 +143,11 @@
 
 		<script>
 			async function saveView() {
-				var xid = document.getElementById('xid').value;
+				var xid = document.querySelector('#views input:checked').value;
 				var configuration = window.editor.getValue();
 				var name = document.getElementById('name').value;
+				var editors = Array.from(document.querySelectorAll('#editors input:checked')).map(x=>x.value.slice(7));
+				var readers = Array.from(document.querySelectorAll('#readers input:checked')).map(x=>x.value.slice(7));
 				if ((name.length < 4) || (name.length > 32)) {
 					return;
 				}
@@ -144,7 +160,9 @@
 					'event_type': eventType,
 					'xid': xid,
 					'name': name,
-					'configuration': configuration
+					'configuration': configuration,
+					'editors': editors,
+					'readers': readers
 				};
 				var saveResp = await fetch('/view', {
 					'method': 'POST',
@@ -154,22 +172,41 @@
 				if (eventType == 'new') {
 					responseEvent = await saveResp.json();
 					xid = responseEvent['xid'];
-					var sel = document.getElementById('saved_selection');
-					sel.add(new Option(name, xid));
-					sel.selectedIndex = sel.length - 1;
+					var views = document.querySelector('#views .dropdown_content');
+					var newInput = document.createElement('input');
+					newInput.setAttribute('id', xid);
+					newInput.setAttribute('name', 'view');
+					newInput.setAttribute('type', 'radio');
+					newInput.setAttribute('value', xid);
+					newInput.setAttribute('checked', true);
+					var newLabel = document.createElement('label');
+					newLabel.setAttribute('for', xid);
+					newLabel.innerText = name;
+					views.appendChild(newInput);
+					views.appendChild(newLabel);
 				}
 				if (eventType == 'update') {
-					var sel = document.getElementById('saved_selection');
-					sel.remove(sel.selectedIndex);
-					sel.add(new Option(name, xid));
-					sel.selectedIndex = sel.length - 1;
+					var views = document.querySelector('#views .dropdown_content');
+					var newInput = document.createElement('input');
+					newInput.setAttribute('id', xid);
+					newInput.setAttribute('name', 'view');
+					newInput.setAttribute('type', 'radio');
+					newInput.setAttribute('value', xid);
+					var newLabel = document.createElement('label');
+					newLabel.setAttribute('for', xid);
+					newLabel.innerText = name;
+					views.removeChild(document.querySelector(`#${xid}`));
+					views.removeChild(document.querySelector(`label[for=${xid}]`));
+					views.appendChild(newInput);
+					views.appendChild(newLabel);
 				}
 			}
 		</script>
 
 		<script>
 			async function deleteView() {
-				var xid = document.getElementById('xid').value;
+				var checked = document.querySelector('#connections input:checked');
+				var xid = checked.value;
 				if (xid.length != 32) {
 					return;
 				}
@@ -182,17 +219,21 @@
 					'body': JSON.stringify(deleteEvent),
 					'headers': {'Content-Type': 'application/json'}
 				});
-				var sel = document.getElementById('saved_selection');
-				sel.remove(sel.selectedIndex);
-				document.getElementById('xid').value = '';
 				document.getElementById('name').value = '';
 				window.editor.setValue('');
+				var views = document.querySelector('#views .dropdown_content');
+				views.removeChild(document.querySelector(`#${xid}`));
+				views.removeChild(document.querySelector(`label[for=${xid}]`));
+				var editorInputs = document.querySelectorAll('#editors input[type="checkbox"]');
+				var readerInputs = document.querySelectorAll('#readers input[type="checkbox"]');
+				editorInputs.forEach((inp)=>{inp.checked = false});
+				readerInputs.forEach((inp)=>{inp.checked = false});
 			}
 		</script>
 
 		<script>
 			async function copyXid() {
-				const xid = document.getElementById('xid').value;
+				const xid = document.querySelector('#views input:checked').value;
 				navigator.clipboard.writeText(xid);
 			}
 		</script>

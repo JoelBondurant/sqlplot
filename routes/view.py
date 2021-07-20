@@ -65,11 +65,12 @@ async def view(request):
 		rquery = dict(request.query)
 		if 'xid' in rquery:
 			xid = rquery['xid']
-			view = {'xid': xid}
-			config = await pgconn.fetchval(f'''
-				select configuration from view where xid = $1 and user_xid = $2 order by name
-				''', xid, user_xid, timeout=4)
-			view['configuration'] = config
+			view = dict(await pgconn.fetchrow(f'''
+				select xid, name, configuration
+				from view
+				where xid = $1
+					and user_xid = $2
+				''', xid, user_xid, timeout=4))
 			auth = await pgconn.fetch(f'''
 				select type, team_xid from "authorization" where object_type = 'connection' and object_xid = $1;
 			''', xid, timeout=4)

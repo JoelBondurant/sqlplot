@@ -157,7 +157,7 @@ input[type=range]::focus {
 	display: none;
 	position: absolute;
 	background-color: #333;
-	min-width: 6em;
+	min-width: 1px;
 	box-shadow: 2px 4px rgba(0,0,0,0.2);
 	z-index: 100;
 	transform: translateY(-1px);
@@ -183,4 +183,6 @@ input[type=range]::focus {
 	display: grid;
 	grid-template-columns: 1fr auto;
 }
-
+.dropdown:hover {
+	transition-delay: 1s;
+}
