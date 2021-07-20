@@ -5,6 +5,7 @@ import aiohttp
 import aiohttp_jinja2
 
 from routes import login
+from routes import authorization
 
 
 FORM_FIELDS = [
@@ -36,6 +37,13 @@ async def query(request):
 					'event_type': 'new',
 					'xid': xid,
 				}
+				auth = [('editor', txid, 'query', xid) for txid in event['editors']]
+				auth += [('reader', txid, 'query', xid) for txid in event['readers']]
+				await pgconn.execute('''
+					delete from "authorization"
+					where object_type = 'query' and object_xid = $1;
+				''', xid)
+				await pgconn.copy_records_to_table('authorization', records=auth, columns=authorization.COLUMNS)
 				redis.publish_json('query', event)
 			elif event['event_type'] == 'update':
 				await pgconn.execute('''
@@ -47,19 +55,39 @@ async def query(request):
 					'event_type': 'update',
 					'xid': event['xid'],
 				}
+				await pgconn.execute('''
+					delete from "authorization"
+					where object_type = 'query' and object_xid = $1;
+				''', xid)
+				editors = [('editor', txid, 'query', xid) for txid in event['editors']]
+				readers = [('reader', txid, 'query', xid) for txid in event['readers']]
+				auth = editors + readers
+				await pgconn.copy_records_to_table('authorization', records=auth, columns=authorization.COLUMNS)
 				redis.publish_json('query', event)
 			elif event['event_type'] == 'delete':
+				await pgconn.execute('''
+					delete from authorization
+					where object_type = 'query' and object_xid = $1;
+				''', event['xid'])
 				await pgconn.execute('''
 					delete from query where xid = $1 and user_xid = $2;
 				''', event['xid'], user_xid)
 			return aiohttp.web.json_response({'xid': event['xid']})
+		#GET:
 		rquery = dict(request.query)
 		if 'xid' in rquery:
 			xid = rquery['xid']
-			query_json = dict(await pgconn.fetchrow(f'''
+			query = dict(await pgconn.fetchrow(f'''
 				select {", ".join(columns)} from query where xid = $1 and user_xid = $2
 			''', xid, user_xid, timeout=4))
-			return aiohttp.web.json_response(query_json)
+			auth = await pgconn.fetch(f'''
+				select type, team_xid from "authorization" where object_type = 'query' and object_xid = $1;
+			''', xid, timeout=4)
+			editors = [x[1] for x in auth if x[0] == 'editor']
+			readers = [x[1] for x in auth if x[0] == 'reader']
+			query['editors'] = editors
+			query['readers'] = readers
+			return aiohttp.web.json_response(query)
 		queries = await pgconn.fetch(f'''
 			select {", ".join(columns)} from query order by name
 			''', timeout=4)

@@ -1,5 +1,6 @@
 {% include "header.html" %}
 	<script src="https://cdn.jsdelivr.net/npm/d3@7.0.0"></script>
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 	<link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs/editor/editor.main.css">
 <style>
 #main {
@@ -21,11 +22,26 @@
 	width: 99%;
 	height: 30px;
 	border: 1px solid #555;
+	overflow: hidden;
+}
+#control_panel input, label {
+	float: left;
+	text-align: center;
+	vertical-align: middle;
+	text-decoration: none;
+	margin-left: 6px;
+}
+#control_panel label {
+	transform: translateY(6px);
 }
 #results_panel {
 	width: 99%;
 	height: 99%;
 	border: 1px solid #555;
+}
+.material-icons {
+	font-size: 18px;
+	transform: translateY(4px);
 }
 </style>
 </head>
@@ -68,9 +84,10 @@ function sendQueryEvent(event) {
 <script>
 function sendQuery() {
 	document.getElementById('results_panel').innerHTML = '';
+	var connectionXid = document.querySelector('#connection input:checked').value;
 	var event = {
 		'query_text': window.editor.getValue(),
-		'connection_xid': document.getElementById('connection_xid').value,
+		'connection_xid': connectionXid,
 		'requested': (new Date()).getTime()
 	}
 	sendQueryEvent(event);
@@ -120,31 +137,50 @@ function sendQuery() {
 	<div id="control_panel">
 		<script>
 			async function savedSelectionChanged() {
-				var sel = document.getElementById('saved_selection');
-				var xid = sel.value;
-				var queryText = "";
-				if (xid.length == 32) {
-					var queryJson = await (await fetch('/query?xid=' + xid)).json();
-					queryText = queryJson['query_text'];
-					connectionXid = queryJson['connection_xid'];
-					document.getElementById('connection_xid').value = connectionXid;
+				var checked = document.querySelector('#queries input:checked');
+				if (checked == null) {
+					document.querySelector('#new_query').checked = true;
+					var xid = '';
+				} else {
+					var xid = checked.value;
 				}
-				var name = sel.options[sel.selectedIndex].text;
+				var name = '';
+				var queryText = '';
+				var editors = [];
+				var readers = [];
+				if (xid.length == 32) {
+					var query = await (await fetch(`/query?xid=${xid}`)).json();
+					name = query['name'];
+					queryText = query['query_text'];
+					connectionXid = query['connection_xid'];
+					editors = query['editors'];
+					readers = query['readers'];
+				}
 				document.getElementById('name').value = name;
 				if (queryText.length > 0) {
 					// don't clear query wip
 					window.editor.setValue(queryText);
 				}
+				if (connectionXid.length > 0) {
+					var connInputs = document.querySelectorAll('#connection input[type="radio"]');
+					var connIndex = Array.from(connInputs).map(x=>x.value).indexOf(connectionXid);
+					connInputs[connIndex].checked = true;
+				}
+				var editorInputs = document.querySelectorAll('#editors input[type="checkbox"]');
+				var readerInputs = document.querySelectorAll('#readers input[type="checkbox"]');
+				editorInputs.forEach((inp)=>{inp.checked = editors.includes(inp.value.slice(7))});
+				readerInputs.forEach((inp)=>{inp.checked = readers.includes(inp.value.slice(7))});
 			}
 		</script>
 
 		<script>
 			async function saveQuery() {
-				var sel = document.getElementById('saved_selection');
-				var xid = sel.value;
-				var queryText = window.editor.getValue();
-				var connectionXid = document.getElementById('connection_xid').value;
+				var xid = document.querySelector('#queries input:checked').value;
 				var name = document.getElementById('name').value;
+				var connectionXid = document.querySelector('#connection input:checked').value;
+				var queryText = window.editor.getValue();
+				var editors = Array.from(document.querySelectorAll('#editors input:checked')).map(x=>x.value.slice(7));
+				var readers = Array.from(document.querySelectorAll('#readers input:checked')).map(x=>x.value.slice(7));
 				if ((name.length < 4) || (name.length > 32)) {
 					return;
 				}
@@ -158,7 +194,9 @@ function sendQuery() {
 					'xid': xid,
 					'query_text': queryText,
 					'name': name,
-					'connection_xid': connectionXid
+					'connection_xid': connectionXid,
+					'editors': editors,
+					'readers': readers
 				};
 				var saveResp = await fetch('/query', {
 					'method': 'POST',
@@ -168,23 +206,41 @@ function sendQuery() {
 				if (eventType == 'new') {
 					responseEvent = await saveResp.json();
 					xid = responseEvent['xid'];
-					var sel = document.getElementById('saved_selection');
-					sel.add(new Option(name, xid));
-					sel.selectedIndex = sel.length - 1;
+					var queries = document.querySelector('#queries .dropdown_content');
+					var newInput = document.createElement('input');
+					newInput.setAttribute('id', xid);
+					newInput.setAttribute('name', 'query');
+					newInput.setAttribute('type', 'radio');
+					newInput.setAttribute('value', xid);
+					newInput.setAttribute('checked', true);
+					var newLabel = document.createElement('label');
+					newLabel.setAttribute('for', xid);
+					newLabel.innerText = name;
+					queries.appendChild(newInput);
+					queries.appendChild(newLabel);
 				}
 				if (eventType == 'update') {
-					var sel = document.getElementById('saved_selection');
-					sel.remove(sel.selectedIndex);
-					sel.add(new Option(name, xid));
-					sel.selectedIndex = sel.length - 1;
+					var queries = document.querySelector('#queries .dropdown_content');
+					var newInput = document.createElement('input');
+					newInput.setAttribute('id', xid);
+					newInput.setAttribute('name', 'connection');
+					newInput.setAttribute('type', 'radio');
+					newInput.setAttribute('value', xid);
+					var newLabel = document.createElement('label');
+					newLabel.setAttribute('for', xid);
+					newLabel.innerText = name;
+					queries.removeChild(document.querySelector(`#${xid}`));
+					queries.removeChild(document.querySelector(`label[for=${xid}]`));
+					queries.appendChild(newInput);
+					queries.appendChild(newLabel);
 				}
 			}
 		</script>
 
 		<script>
 			async function deleteQuery() {
-				var sel = document.getElementById('saved_selection');
-				var xid = sel.value;
+				var checked = document.querySelector('#connections input:checked');
+				var xid = checked.value;
 				if (xid.length != 32) {
 					return;
 				}
@@ -197,11 +253,15 @@ function sendQuery() {
 					'body': JSON.stringify(deleteEvent),
 					'headers': {'Content-Type': 'application/json'}
 				});
-				var sel = document.getElementById('saved_selection');
-				sel.remove(sel.selectedIndex);
-				document.getElementById('xid').value = '';
 				document.getElementById('name').value = '';
 				window.editor.setValue('');
+				var queries = document.querySelector('#queries .dropdown_content');
+				queries.removeChild(document.querySelector(`#${xid}`));
+				queries.removeChild(document.querySelector(`label[for=${xid}]`));
+				var editorInputs = document.querySelectorAll('#editors input[type="checkbox"]');
+				var readerInputs = document.querySelectorAll('#readers input[type="checkbox"]');
+				editorInputs.forEach((inp)=>{inp.checked = false});
+				readerInputs.forEach((inp)=>{inp.checked = false});
 			}
 		</script>
 
@@ -213,42 +273,60 @@ function sendQuery() {
 			}
 		</script>
 
-		<form name="query_form" action="">
-			<input type="hidden" id="xid" name="xid" value="">
+		<div id="control_panel">
 			<label for="name">name:</label>
 			<input id="name" type="text" name="name" value="" minlength="4" maxlength="32" required/>
-			<label for="connection_xid">connection:</label>
-			<select id="connection_xid" name="connection_xid">
-				{% for connection in connections: %}
-				<option value="{{ connection['xid'] }}">{{ connection['name'] }}</option>
-				{% endfor %}
-			</select>
-			<label for="editors_selection">editors:</label>
-			<select id="editors_selection" style="vertical-align: bottom;">
-				<option value=""></option>
-				{% for team in teams %}
-				<option value="{{ team['xid'] }}">{{ team['name'] }}</option>
-				{% endfor %}
-			</select>
-			<label for="readers_selection">readers:</label>
-			<select id="readers_selection" style="vertical-align: bottom;">
-				<option value=""></option>
-				{% for team in teams %}
-				<option value="{{ team['xid'] }}">{{ team['name'] }}</option>
-				{% endfor %}
-			</select>
-			<input type="button" value="save" title="save(query_xid)" onclick="saveQuery();">
-			<input type="button" value="delete" title="delete(query_xid)" onclick="deleteQuery();">
-			<label for="saved_selection">queries:</label>
-			<select id="saved_selection" onclick="savedSelectionChanged();">
-				<option value="" selected></option>
-				{% for query in queries %}
-				<option value="{{ query['xid'] }}">{{ query['name'] }}</option>
-				{% endfor %}
-			</select>
+			<div id="connection" class="dropdown">
+				<button class="dropbutton">
+					<div>connection <i class="material-icons">expand_more</i></div>
+				</button>
+				<div class="dropdown_content">
+					{% for conn in connections %}
+					<input name="connection" id="{{ conn['xid'] }}" type="radio" value="{{ conn['xid'] }}">
+					<label for="{{ conn['xid'] }}">{{ conn['name'] }}</label>
+					{% endfor %}
+				</div>
+			</div>
+			<div id="editors" class="dropdown">
+				<button class="dropbutton">
+					<div>editors <i class="material-icons">expand_more</i></div>
+				</button>
+				<div class="dropdown_content">
+					{% for team in teams %}
+					<input id="editor_{{ team['xid'] }}" type="checkbox" value="editor_{{ team['xid'] }}">
+					<label for="editor_{{ team['xid'] }}">{{ team['name'] }}</label>
+					{% endfor %}
+				</div>
+			</div>
+			<div id="readers" class="dropdown">
+				<button class="dropbutton">
+					<div>readers <i class="material-icons">expand_more</i></div>
+				</button>
+				<div class="dropdown_content">
+					{% for team in teams %}
+					<input id="reader_{{ team['xid'] }}" type="checkbox" value="reader_{{ team['xid'] }}">
+					<label for="reader_{{ team['xid'] }}">{{ team['name'] }}</label>
+					{% endfor %}
+				</div>
+			</div>
+			<input type="button" value="save" title="save(query)" onclick="saveQuery();">
+			<input type="button" value="delete" title="delete(query)" onclick="deleteQuery();">
+			<div id="queries" class="dropdown" onmouseleave="savedSelectionChanged();">
+				<button class="dropbutton">
+					<div>queries</span> <i class="material-icons">expand_more</i></div>
+				</button>
+				<div class="dropdown_content">
+					<input name="query" id="new_query" type="radio" value="" checked>
+					<label for="new_query">new_query</label>
+					{% for query in queries %}
+					<input name="query" id="{{ query['xid'] }}" type="radio" value="{{ query['xid'] }}">
+					<label for="{{ query['xid'] }}">{{ query['name'] }}</label>
+					{% endfor %}
+				</div>
+			</div>
 			<input type="button" value="xid" title="copy(query_xid)" onclick="copyXid();">
 			<input type="button" value="exec" title="alt+Enter" onclick="sendQuery();">
-		</form>
+		</div>
 	</div>
 
 	<div id="results_panel">
