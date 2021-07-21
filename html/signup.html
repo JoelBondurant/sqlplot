@@ -14,6 +14,45 @@
 	<button onclick="window.location.assign('/login')">login</button>
 </div>
 
+<script>
+async function sha512(msg) {
+	if (typeof msg == 'number') {
+		msg = msg.toString();
+	}
+	if (typeof msg == 'string') {
+		msg = (new TextEncoder()).encode(msg);
+	}
+	return await crypto.subtle.digest('SHA-512', msg);
+}
+</script>
+
+<script>
+function bytesToHex(byteArray) {
+	return Array.from(new Uint8Array(byteArray), function(byte) {
+		return ('0' + (byte & 0xFF).toString(16)).slice(-2);
+	}).join('');
+}
+</script>
+
+<script>
+async function proofOfWork(difficulty=4) {
+	var rand;
+	while (true) {
+		rand = Math.floor(Math.random()*10**12);
+		if (rand.toString().length == 12) {
+			break;
+		}
+	}
+	var nonce = 0;
+	while (true) {
+		var hash = bytesToHex(await sha512(await sha512(rand + nonce)));
+		if (hash.substring(0, difficulty) == '0'.repeat(difficulty)) {
+			return rand.toString() + ';' + nonce.toString();
+		}
+		nonce++;
+	}
+}
+</script>
 
 <script>
 async function deriveKey(akey) {
@@ -61,7 +100,11 @@ async function signUp() {
 	}
 	var derivedKey = await deriveKey(password);
 	var derivedPassword = (await crypto.subtle.exportKey('jwk', derivedKey))['k'];
-	var signUpEvent = {'name': name, 'password': derivedPassword};
+	tooltip.innerHTML = 'generating proof of work...';
+	tooltip.style.visibility = 'visible';
+	tooltip.style.backgroundColor = '#aaf';
+	var pow = await proofOfWork();
+	var signUpEvent = {'name': name, 'password': derivedPassword, 'pow': pow};
 	var resp = await (await fetch('/signup', {'method': 'POST', 'body': JSON.stringify(signUpEvent)})).json();
 	if (resp['status'] == 'success') {
 		tooltip.innerHTML = 'signup success.';

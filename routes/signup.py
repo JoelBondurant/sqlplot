@@ -12,11 +12,14 @@ async def signup(request):
 		event = await request.json()
 		name = event['name']
 		password = event['password']
+		prow = event['pow']
 		try:
 			assert len(name) >= 4
 			assert len(name) <= 16
 			assert len(password) >= 16
 			assert len(password) <= 64
+			assert hashlib.sha512(hashlib.sha512(str(sum(map(int, prow.split(';')))).encode()
+				).digest()).hexdigest()[:4] == '0'*4
 			async with (request.app['pg_pool']).acquire(timeout=2) as pgconn:
 				assert await pgconn.fetchval('select count(1) from "user" where name = $1', name) == 0
 				xid = 'x' + secrets.token_hex(16)[1:]
