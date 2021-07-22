@@ -21,8 +21,8 @@ CONNECTION_XIDS = [
 
 async def query(request):
 	user_session, user_xid = login.authenticate(request)
+	columns = ['xid'] + FORM_FIELDS.copy()
 	async with (request.app['pg_pool']).acquire(timeout=2) as pgconn:
-		columns = ['xid'] + FORM_FIELDS.copy()
 		if request.method == 'POST':
 			redis = request.app['redis']
 			event = await request.json()

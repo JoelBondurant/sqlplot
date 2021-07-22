@@ -31,8 +31,8 @@ async def connection(request):
 	if not FERNET_KEY:
 		FERNET_KEY = Fernet(request.app['config']['connection']['key'])
 	user_session, user_xid = login.authenticate(request)
+	columns = ['xid'] + FORM_FIELDS.copy()
 	async with (request.app['pg_pool']).acquire(timeout=2) as pgconn:
-		columns = ['xid'] + FORM_FIELDS.copy()
 		if request.method == 'POST':
 			event = await request.json()
 			logging.debug(f'Connection event posted: {event}')
@@ -45,8 +45,7 @@ async def connection(request):
 				editors = [('editor', txid, 'connection', xid) for txid in event['editors']]
 				readers = [('reader', txid, 'connection', xid) for txid in event['readers']]
 				auth = editors + readers + [('creator', user_xid[:-4]+'0000', 'connection', xid)]
-				if len(auth) > 0:
-					await pgconn.copy_records_to_table('authorization', records=auth, columns=authorization.COLUMNS)
+				await pgconn.copy_records_to_table('authorization', records=auth, columns=authorization.COLUMNS)
 			elif event['event_type'] == 'update':
 				event['configuration'] = FERNET_KEY.encrypt(event['configuration'].encode()).decode()
 				xid = event['xid']
