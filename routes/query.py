@@ -89,7 +89,7 @@ async def query(request):
 				left join "authorization" a
 					on (q.xid = a.object_xid and a.object_type = 'query')
 				left join "team_membership" tm
-					on (a.type in ('creator','editor') and a.team_xid = tm.team_xid)
+					on (a.type in ('creator','editor','reader') and a.team_xid = tm.team_xid)
 				where q.xid = $1
 				and (tm.user_xid = $2)
 			''', xid, user_xid, timeout=4))
@@ -99,7 +99,6 @@ async def query(request):
 				where object_type = 'query'
 				and not team_xid = left($2,28)||'0000'
 				and object_xid = $1;
-
 			''', xid, user_xid, timeout=4)
 			editors = [x[1] for x in auth if x[0] == 'editor']
 			readers = [x[1] for x in auth if x[0] == 'reader']
@@ -123,7 +122,7 @@ async def query(request):
 			left join "authorization" a
 				on (c.xid = a.object_xid and a.object_type = 'connection')
 			left join "team_membership" tm
-				on (a.type in ('creator','editor') and a.team_xid = tm.team_xid)
+				on (a.type in ('creator','editor','reader') and a.team_xid = tm.team_xid)
 			where (tm.user_xid = $1)
 			order by 2, 1
 			''', user_xid, timeout=4)

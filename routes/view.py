@@ -72,7 +72,7 @@ async def view(request):
 				left join "authorization" a
 					on (v.xid = a.object_xid and a.object_type = 'view')
 				left join "team_membership" tm
-					on (a.type in ('creator','editor') and a.team_xid = tm.team_xid)
+					on (a.type in ('creator','editor','reader') and a.team_xid = tm.team_xid)
 				where v.xid = $1
 					and (tm.user_xid = $2)
 			''', xid, user_xid, timeout=4))
