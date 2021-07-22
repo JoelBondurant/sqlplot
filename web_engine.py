@@ -55,6 +55,7 @@ async def app_factory(argv=[]):
 		web.get('/dashboard', dashboard.dashboard),
 		web.post('/dashboard', dashboard.dashboard),
 		web.static('/css/', './static/css/', show_index=False, append_version=True),
+		web.static('/js/', './static/js/', show_index=False, append_version=True),
 		web.static('/font/', './static/font/', show_index=False, append_version=True),
 		web.static('/data', '/data/distillery/query/', show_index=False, append_version=True),
 		web.static('/img', '/data/distillery/img/', show_index=False, append_version=True),

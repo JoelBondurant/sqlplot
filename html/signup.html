@@ -14,25 +14,6 @@
 	<button onclick="window.location.assign('/login')">login</button>
 </div>
 
-<script>
-async function sha512(msg) {
-	if (typeof msg == 'number') {
-		msg = msg.toString();
-	}
-	if (typeof msg == 'string') {
-		msg = (new TextEncoder()).encode(msg);
-	}
-	return await crypto.subtle.digest('SHA-512', msg);
-}
-</script>
-
-<script>
-function bytesToHex(byteArray) {
-	return Array.from(new Uint8Array(byteArray), function(byte) {
-		return ('0' + (byte & 0xFF).toString(16)).slice(-2);
-	}).join('');
-}
-</script>
 
 <script>
 async function proofOfWork(name, derivedPassword, difficulty=3) {
@@ -46,7 +27,7 @@ async function proofOfWork(name, derivedPassword, difficulty=3) {
 	var nonce = 0;
 	while (true) {
 		preImg = (rand + nonce).toString() + name + derivedPassword;
-		var hash = bytesToHex(await sha512(await sha512(preImg)));
+		var hash = util.bytesToHex(await util.sha512(await util.sha512(preImg)));
 		if (hash.substring(0, difficulty) == '0'.repeat(difficulty)) {
 			return rand.toString() + ';' + nonce.toString();
 		}

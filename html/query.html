@@ -13,13 +13,44 @@
 	resize: vertical;
 	overflow: hidden;
 }
+#stats_panel {
+	display: flex;
+	width: 99%;
+	height: 20px;
+	border: 1px solid #555;
+	overflow: hidden;
+	background: #111;
+	font-size: 12px;
+}
+#stats_panel div {
+	border: 1px solid #555;
+	text-align: center;
+	vertical-align: middle;
+	text-decoration: none;
+	margin-left: 6px;
+	padding-left: 6px;
+	padding-right: 6px;
+	background: #222;
+	color: #ccc;
+	min-width: 4em;
+}
+#stats_panel label {
+	font-size: 12px;
+	transform: translateY(3px);
+	text-align: center;
+	vertical-align: middle;
+	padding-left: 6px;
+	padding-right: 6px;
+}
 #control_panel {
+	display: flex;
 	width: 99%;
 	height: 30px;
 	border: 1px solid #555;
 	overflow: hidden;
+	background: #111;
 }
-#control_panel input, label {
+#control_panel input {
 	float: left;
 	text-align: center;
 	vertical-align: middle;
@@ -28,6 +59,11 @@
 }
 #control_panel label {
 	transform: translateY(6px);
+	float: left;
+	text-align: center;
+	vertical-align: middle;
+	text-decoration: none;
+	margin-left: 6px;
 }
 #results_panel {
 	width: 99%;
@@ -77,7 +113,12 @@ function sendQueryEvent(event) {
 }
 </script>
 <script>
+var queryStart;
 function sendQuery() {
+	queryStart = new Date();
+	document.querySelector('#time').innerText = '';
+	document.querySelector('#row_count').innerText = '';
+	document.querySelector('#column_count').innerText = '';
 	document.getElementById('results_panel').innerHTML = '';
 	var connectionXid = document.querySelector('#connection input:checked').value;
 	var event = {
@@ -325,7 +366,14 @@ function sendQuery() {
 		</script>
 	</div>
 
-
+	<div id="stats_panel">
+		<label>time:</label>
+		<div id="time"></div>
+		<label>rows:</label>
+		<div id="row_count"></div>
+		<label>columns:</label>
+		<div id="column_count"></div>
+	</div>
 
 	<div id="results_panel">
 		<script>
@@ -333,7 +381,19 @@ function sendQuery() {
 
 			var csvText = await d3.text('/data/{{ user_xid }}.csv');
 			var csv = d3.csvParseRows(csvText);
-			
+			// Stats Panel:
+			var elapsed = (new Date() - queryStart);
+			if (elapsed < 10**4) {
+				elapsed = elapsed.toString() + 'ms';
+			} else if (elapsed < 10**7) {
+				elapsed = (elapsed/1000.0).toString() + 's';
+			} else {
+				elapsed = (elapsed/1000.0/60).toString() + 'min';
+			}
+			document.querySelector('#time').innerText = elapsed;
+			document.querySelector('#row_count').innerText = csv.length - 1;
+			document.querySelector('#column_count').innerText = csv[0].length;
+			// Results Panel:
 			d3.select('#results_panel').html('');
 			var table = d3.select('#results_panel').append('table');
 			table.style("border-collapse", "collapse")
