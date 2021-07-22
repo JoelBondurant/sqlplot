@@ -35,6 +35,7 @@ button, input[type=button], input[type=submit] {
 	border: 1px solid #888;
 	color: #ddd;
 	display: inline-block;
+	height: 28px;
 	padding: 4px 12px;
 	text-align: center;
 	transition-duration: 0.4s;
@@ -73,6 +74,7 @@ input[type=text], input[type=password] {
 	color: white;
 	font-size: 14px;
 	padding: 4px 12px;
+	height: 28px;
 }
 input[type=checkbox] {
 	appearance: none;
@@ -151,6 +153,9 @@ input[type=range]::focus {
 .dropdown .dropbutton div {
 	transform: translateY(-3px);
 	margin-left: 6px;
+}
+.dropbutton div {
+	height: 24px;
 }
 .dropdown:hover .dropbutton {
 	background-color: #666;
