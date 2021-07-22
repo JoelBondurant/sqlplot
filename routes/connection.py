@@ -53,10 +53,10 @@ async def connection(request):
 					update "connection" c
 					set name = $3, configuration = $4, updated = timezone('utc', now())
 					from "authorization" a
-					  on (c.xid = a.object_xid and a.object_type = 'connection')
 					join "team_membership" tm
-					  on (a.type in ('creator','editor') and a.team_xid = tm.team_xid)
-					where c.xid = $1 and tm.user_xid = $2;
+						on (a.type in ('creator','editor') and a.team_xid = tm.team_xid)
+					where c.xid = $1 and tm.user_xid = $2
+						and (c.xid = a.object_xid and a.object_type = 'connection');
 				''', xid, user_xid, event['name'], event['configuration'])
 				await pgconn.execute('''
 					delete from "authorization"

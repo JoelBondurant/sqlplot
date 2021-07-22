@@ -36,10 +36,10 @@ async def view(request):
 					update "view" v
 					set name = $3, configuration = $4, updated = timezone('utc', now())
 					from "authorization" a
-					  on (v.xid = a.object_xid and a.object_type = 'view')
 					join "team_membership" tm
-					  on (a.type in ('creator','editor') and a.team_xid = tm.team_xid)
-					where v.xid = $1 and tm.user_xid = $2;
+						on (a.type in ('creator','editor') and a.team_xid = tm.team_xid)
+					where v.xid = $1 and tm.user_xid = $2
+						and (v.xid = a.object_xid and a.object_type = 'view');
 				''', xid, user_xid, event['name'], event['configuration'])
 				await pgconn.execute('''
 					delete from "authorization"

@@ -30,16 +30,16 @@ async def dashboard(request):
 				readers = [('reader', txid, 'dashboard', xid) for txid in event['readers']]
 				auth = editors + readers + [('creator', user_xid[:-4]+'0000', 'dashboard', xid)]
 				await pgconn.copy_records_to_table('authorization', records=auth, columns=authorization.COLUMNS)
-			elif event['event_type'] ==  'update':
+			elif event['event_type'] == 'update':
 				xid = event['xid']
 				await pgconn.execute('''
 					update "dashboard" d
 					set name = $3, configuration = $4, updated = timezone('utc', now())
 					from "authorization" a
-					  on (d.xid = a.object_xid and a.object_type = 'dashboard')
 					join "team_membership" tm
-					  on (a.type in ('creator','editor') and a.team_xid = tm.team_xid)
-					where d.xid = $1 and tm.user_xid = $2;
+						on (a.type in ('creator','editor') and a.team_xid = tm.team_xid)
+					where d.xid = $1 and tm.user_xid = $2
+						and (d.xid = a.object_xid and a.object_type = 'dashboard');
 				''', xid, user_xid, event['name'], event['configuration'])
 				await pgconn.execute('''
 					delete from "authorization"
