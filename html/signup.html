@@ -114,7 +114,7 @@ async function signUp() {
 		setTimeout(() => window.location.assign('/login'), 600);
 	}
 	else if (resp['status'] == 'fail') {
-		tooltip.innerHTML = 'signup fail.';
+		tooltip.innerHTML = 'signup fail: ' + resp['msg'];
 		tooltip.style.visibility = 'visible';
 		document.getElementById('name').value = '';
 		document.getElementById('password').value = '';

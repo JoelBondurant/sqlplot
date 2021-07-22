@@ -81,8 +81,11 @@ async def team(request):
 			team['members'] = sorted(team['members'])
 			return aiohttp.web.json_response(team)
 		teams = await pgconn.fetch(f'''
-			select xid, name from team order by name, xid
-			''', timeout=4)
+			select xid, name
+			from team t
+			where not t.xid = left($1,28)||'0000'
+			order by name, xid
+			''', user_xid, timeout=4)
 		teams = [dict(x) for x in teams]
 		context = {
 			'teams': teams,

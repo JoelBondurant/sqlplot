@@ -32,7 +32,7 @@ async def connection(request):
 		FERNET_KEY = Fernet(request.app['config']['connection']['key'])
 	user_session, user_xid = login.authenticate(request)
 	async with (request.app['pg_pool']).acquire(timeout=2) as pgconn:
-		columns = ['xid','user_xid'] + FORM_FIELDS.copy()
+		columns = ['xid'] + FORM_FIELDS.copy()
 		if request.method == 'POST':
 			event = await request.json()
 			logging.debug(f'Connection event posted: {event}')
@@ -40,33 +40,30 @@ async def connection(request):
 				event['configuration'] = FERNET_KEY.encrypt(event['configuration'].encode()).decode()
 				xid = 'x' + secrets.token_hex(16)[1:]
 				event['xid'] = xid
-				record = tuple([xid, user_xid] + [event[k] for k in FORM_FIELDS])
+				record = tuple([xid] + [event[k] for k in FORM_FIELDS])
 				result = await pgconn.copy_records_to_table('connection', records=[record], columns=columns)
 				editors = [('editor', txid, 'connection', xid) for txid in event['editors']]
-				readers += [('reader', txid, 'connection', xid) for txid in event['readers']]
-				auth = editors + readers
+				readers = [('reader', txid, 'connection', xid) for txid in event['readers']]
+				auth = editors + readers + [('creator', user_xid[:-4]+'0000', 'connection', xid)]
 				if len(auth) > 0:
 					await pgconn.copy_records_to_table('authorization', records=auth, columns=authorization.COLUMNS)
 			elif event['event_type'] == 'update':
 				event['configuration'] = FERNET_KEY.encrypt(event['configuration'].encode()).decode()
 				xid = event['xid']
 				await pgconn.execute('''
-					update "connection"
-					set name = $3, configuration = $4, updated = timezone('utc', now())
-					where xid = $1 and user_xid = $2;
-				''', xid, user_xid, event['name'], event['configuration'])
-				await pgconn.execute('''
 					update "connection" c
 					set name = $3, configuration = $4, updated = timezone('utc', now())
 					from "authorization" a
 					  on (c.xid = a.object_xid and a.object_type = 'connection')
-					join "team_membership" tm 
-					  on (a.type = 'editor' and a.team_xid = tm.team_xid)
+					join "team_membership" tm
+					  on (a.type in ('creator','editor') and a.team_xid = tm.team_xid)
 					where c.xid = $1 and tm.user_xid = $2;
 				''', xid, user_xid, event['name'], event['configuration'])
 				await pgconn.execute('''
 					delete from "authorization"
-					where object_type = 'connection' and object_xid = $1;
+					where "type" in ('editor','reader')
+						and object_type = 'connection'
+						and object_xid = $1;
 				''', xid)
 				editors = [('editor', txid, 'connection', xid) for txid in event['editors']]
 				readers = [('reader', txid, 'connection', xid) for txid in event['readers']]
@@ -76,18 +73,10 @@ async def connection(request):
 			elif event['event_type'] == 'delete':
 				xid = event['xid']
 				await pgconn.execute('''
-					delete from authorization
-					where object_type = 'connection' and object_xid = $1;
-				''', xid)
-				await pgconn.execute('''
-					delete from connection
-					where xid = $1 and user_xid = $2;
-				''', xid, user_xid)
-				await pgconn.execute('''
 					delete from "connection" c
 					using "authorization" a, "team_membership" tm
 					where (c.xid = a.object_xid and a.object_type = 'connection')
-					and (a.type = 'editor' and a.team_xid = tm.team_xid)
+					and (a.type in ('creator','editor') and a.team_xid = tm.team_xid)
 					and c.xid = $1 and tm.user_xid = $2;
 				''', xid, user_xid)
 			return aiohttp.web.json_response({'xid': xid})
@@ -101,9 +90,9 @@ async def connection(request):
 				left join "authorization" a
 					on (c.xid = a.object_xid and a.object_type = 'connection')
 				left join "team_membership" tm
-					on (a.type = 'editor' and a.team_xid = tm.team_xid)
+					on (a.type in ('creator','editor') and a.team_xid = tm.team_xid)
 				where c.xid = $1
-				and (c.user_xid = $2 or tm.user_xid = $2)
+				and (tm.user_xid = $2)
 				''', xid, user_xid, timeout=4))
 			conn['configuration'] = FERNET_KEY.decrypt(conn['configuration'].encode()).decode()
 			auth = await pgconn.fetch(f'''
@@ -123,8 +112,8 @@ async def connection(request):
 			left join "authorization" a
 				on (c.xid = a.object_xid and a.object_type = 'connection')
 			left join "team_membership" tm
-				on (a.type = 'editor' and a.team_xid = tm.team_xid)
-			where (c.user_xid = $1 or tm.user_xid = $1)
+				on (a.type in ('creator','editor') and a.team_xid = tm.team_xid)
+			where (tm.user_xid = $1)
 			order by 2, 1
 			''', user_xid, timeout=4)
 		connections = [dict(x) for x in connections]
@@ -134,6 +123,7 @@ async def connection(request):
 			join team t
 				on (tm.team_xid = t.xid)
 			where tm.user_xid = $1
+				and not t.xid = left($1,28)||'0000'
 			order by 2, 1
 			''', user_xid, timeout=4)
 		teams = [dict(x) for x in teams]

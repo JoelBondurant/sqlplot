@@ -81,7 +81,7 @@
 		if (type.length == 0) {
 			return;
 		}
-		if ((name.length < 4) || (name.length > 32)) {
+		if ((name.length < 2) || (name.length > 32)) {
 			return;
 		}
 		if (xid.length == 0) {
@@ -184,7 +184,7 @@
 			</div>
 		</div>
 		<label for="name">name:</label>
-		<input id="name" type="text" name="name" value="" minlength="4" maxlength="32" required/>
+		<input id="name" type="text" name="name" value="" minlength="2" maxlength="32" required/>
 		<div id="type" class="dropdown">
 			<button class="dropbutton">
 				<div>type <i class="material-icons">expand_more</i></div>
