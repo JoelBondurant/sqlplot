@@ -18,9 +18,11 @@ async def signup(request):
 			assert len(name) <= 16
 			assert len(password) >= 16
 			assert len(password) <= 64
+			difficulty = 3
 			rand, nonce = map(int, prow.split(';'))
+			assert len(str(rand)) == 12
 			assert hashlib.sha512(hashlib.sha512((str(rand + nonce) + name + password).encode()
-				).digest()).hexdigest()[:4] == '0'*4
+				).digest()).hexdigest()[:difficulty] == '0'*difficulty
 			async with (request.app['pg_pool']).acquire(timeout=2) as pgconn:
 				assert await pgconn.fetchval('select count(1) from "user" where name = $1', name) == 0
 				xid = 'x' + secrets.token_hex(16)[1:]
