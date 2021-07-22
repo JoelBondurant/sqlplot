@@ -115,6 +115,10 @@ function sendQueryEvent(event) {
 <script>
 var queryStart;
 function sendQuery() {
+	var queryText = window.editor.getValue();
+	if (queryText.trim().length == 0) {
+		return;
+	}
 	queryStart = new Date();
 	document.querySelector('#time').innerText = '';
 	document.querySelector('#row_count').innerText = '';
@@ -122,7 +126,7 @@ function sendQuery() {
 	document.getElementById('results_panel').innerHTML = '';
 	var connectionXid = document.querySelector('#connection input:checked').value;
 	var event = {
-		'query_text': window.editor.getValue(),
+		'query_text': queryText,
 		'connection_xid': connectionXid,
 		'requested': (new Date()).getTime()
 	}
