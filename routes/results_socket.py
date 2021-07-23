@@ -11,7 +11,7 @@ from routes import login
 
 async def process_event(event, resp):
 	logging.debug(f'Results event handler: {event}')
-	await resp.send_json({'status':'ready'})
+	await resp.send_json(event)
 
 
 async def channel_reader(channel, resp):

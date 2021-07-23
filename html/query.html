@@ -31,7 +31,7 @@
 	padding-left: 6px;
 	padding-right: 6px;
 	background: #222;
-	color: #ccc;
+	color: #eee;
 	min-width: 8em;
 }
 #stats_panel label {
@@ -73,6 +73,10 @@
 	font-size: 18px;
 	transform: translateY(4px);
 }
+.error {
+	padding: 2em;
+	color: #f44;
+}
 </style>
 </head>
 <body>
@@ -81,9 +85,15 @@
 function openResultsSocket() {
 	var resultsSocket = new WebSocket('wss://127.0.0.1:8080/results_socket');
 	resultsSocket.onmessage = async (msg) => {
-		var resultStatus = JSON.parse(msg.data)['status'];
-		if (resultStatus == 'ready') {
+		var result = JSON.parse(msg.data);
+		console.log(result);
+		if (result['status'] == 'success') {
 			await renderResults();
+		} else if (result['status'] == 'fail') {
+			var msg = result['msg'];
+			var err = `<div class="error">Query Failure: ${msg}</div>`;
+			console.log(err);
+			d3.select('#results_panel').html(err);
 		}
 	}
 	return resultsSocket;
@@ -389,8 +399,13 @@ function sendQuery() {
 			} else {
 				elapsed = (elapsed/1000.0/60).toString() + '[min]';
 			}
-			var rowCount = (csv.length - 1).toString() + '[rows]';
-			var colCount = (csv[0].length).toString() + '[cols]';
+			if (csv.length > 0) {
+				var rowCount = (csv.length - 1).toString() + '[rows]';
+				var colCount = (csv[0].length).toString() + '[cols]';
+			} else {
+				var rowCount = '0[rows]';
+				var colCount = '0[cols]';
+			}
 			document.querySelector('#time').innerText = elapsed;
 			document.querySelector('#row_count').innerText = rowCount;
 			document.querySelector('#column_count').innerText = colCount;

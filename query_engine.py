@@ -56,7 +56,6 @@ async def process_event(event):
 			except Exception as ex:
 				return
 		fernet = Fernet(app['config']['connection']['key'])
-		
 		connection_config = fernet.decrypt(connection_info['configuration'].encode()).decode()
 		connection_config = orjson.loads(connection_config)
 		if connection_info['type'] == 'PostgreSQL':
@@ -68,24 +67,32 @@ async def process_event(event):
 					host=connection_config['host'],
 					command_timeout=10)
 				rs = await pg.fetch(query_text, timeout=20)
+				status, msg = 'success', ''
 			except Exception as ex:
-				return
+				rs = []
+				status = 'fail'
+				msg = type(ex).__name__ + ': ' + ex.message
 			if len(rs) == 0:
-				return
-			columns = [*rs[0].keys()]
-			data = [[*x.values()] for x in rs]
-			logging.debug(f'Query data: {columns}\n{data}')
-			fn_hidden = f'/data/distillery/query/.{user_xid}.csv'
-			fn = f'/data/distillery/query/{user_xid}.csv'
-			async with aiofiles.open(fn_hidden, mode='w', newline='') as fout:
-				writer = aiocsv.AsyncWriter(fout, dialect='unix')
-				await writer.writerow(columns)
-				await writer.writerows(data)
-			if os.path.exists(fn):
-				await aiofiles.os.remove(fn)
-			await aiofiles.os.rename(fn_hidden, fn)
-			logging.info(f'Ready: {fn}')
-			await app['redis'].publish_json(user_xid, {'status':'ready'})
+				fn = f'/data/distillery/query/{user_xid}.csv'
+				if os.path.exists(fn):
+					await aiofiles.os.remove(fn)
+				async with aiofiles.open(fn, mode='w', newline='') as fout:
+					pass
+			else:
+				columns = [*rs[0].keys()]
+				data = [[*x.values()] for x in rs]
+				logging.debug(f'Query data: {columns}\n{data}')
+				fn_hidden = f'/data/distillery/query/.{user_xid}.csv'
+				fn = f'/data/distillery/query/{user_xid}.csv'
+				async with aiofiles.open(fn_hidden, mode='w', newline='') as fout:
+					writer = aiocsv.AsyncWriter(fout, dialect='unix')
+					await writer.writerow(columns)
+					await writer.writerows(data)
+				if os.path.exists(fn):
+					await aiofiles.os.remove(fn)
+				await aiofiles.os.rename(fn_hidden, fn)
+				logging.info(f'Ready: {fn}')
+			await app['redis'].publish_json(user_xid, {'status':status, 'msg':msg})
 
 
 async def channel_reader(channel):
