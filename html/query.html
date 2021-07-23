@@ -32,7 +32,7 @@
 	padding-right: 6px;
 	background: #222;
 	color: #ccc;
-	min-width: 4em;
+	min-width: 8em;
 }
 #stats_panel label {
 	font-size: 12px;
@@ -338,7 +338,7 @@ function sendQuery() {
 			</div>
 		</div>
 		<input type="button" value="xid" title="copy(query_xid)" onclick="copyXid();">
-		<input type="button" value="exec" title="alt+Enter" onclick="sendQuery();">
+		<input type="button" value="exec" title="execute query (alt+Enter)" onclick="sendQuery();">
 	</div>
 
 	<div id="query_panel" autofocus>
@@ -370,32 +370,30 @@ function sendQuery() {
 	</div>
 
 	<div id="stats_panel">
-		<label>time:</label>
-		<div id="time"></div>
-		<label>rows:</label>
-		<div id="row_count"></div>
-		<label>columns:</label>
-		<div id="column_count"></div>
+		<div id="time" title="elapsed time"></div>
+		<div id="row_count" title="row count"></div>
+		<div id="column_count" title="column count"></div>
 	</div>
 
 	<div id="results_panel">
 		<script>
 		async function renderResults() {
-
 			var csvText = await d3.text('/data/{{ user_xid }}.csv');
 			var csv = d3.csvParseRows(csvText);
 			// Stats Panel:
 			var elapsed = (new Date() - queryStart);
 			if (elapsed < 10**4) {
-				elapsed = elapsed.toString() + 'ms';
+				elapsed = elapsed.toString() + '[ms]';
 			} else if (elapsed < 10**7) {
-				elapsed = (elapsed/1000.0).toString() + 's';
+				elapsed = (elapsed/1000.0).toString() + '[s]';
 			} else {
-				elapsed = (elapsed/1000.0/60).toString() + 'min';
+				elapsed = (elapsed/1000.0/60).toString() + '[min]';
 			}
+			var rowCount = (csv.length - 1).toString() + '[rows]';
+			var colCount = (csv[0].length).toString() + '[cols]';
 			document.querySelector('#time').innerText = elapsed;
-			document.querySelector('#row_count').innerText = csv.length - 1;
-			document.querySelector('#column_count').innerText = csv[0].length;
+			document.querySelector('#row_count').innerText = rowCount;
+			document.querySelector('#column_count').innerText = colCount;
 			// Results Panel:
 			d3.select('#results_panel').html('');
 			var table = d3.select('#results_panel').append('table');
