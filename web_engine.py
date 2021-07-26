@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import logging
-import ssl
 import sys
 
 import aiofiles
@@ -34,7 +33,7 @@ async def app_factory(argv=[]):
 		format='%(asctime)s %(levelname)-8s %(message)s',
 		datefmt='%Y-%m-%d %H:%M:%S'
 	)
-	logging.info('Distillery Started')
+	logging.info('SQL Plot Started')
 	logging.info(f'Python version: {sys.version}')
 	aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('./html'))
 	app.add_routes([
@@ -57,13 +56,13 @@ async def app_factory(argv=[]):
 		web.static('/css/', './static/css/', show_index=False, append_version=True),
 		web.static('/js/', './static/js/', show_index=False, append_version=True),
 		web.static('/font/', './static/font/', show_index=False, append_version=True),
-		web.static('/data', '/data/distillery/query/', show_index=False, append_version=True),
-		web.static('/img', '/data/distillery/img/', show_index=False, append_version=True),
+		web.static('/data', '/data/sqlplot/query/', show_index=False, append_version=True),
+		web.static('/img', '/data/sqlplot/img/', show_index=False, append_version=True),
 		web.static('/simg', './static/img/', show_index=False, append_version=True),
 		web.get('/query_socket', query_socket.query_socket),
 		web.get('/results_socket', results_socket.results_socket),
 	])
-	async with aiofiles.open('/secrets/distillery.json', 'r') as fin:
+	async with aiofiles.open('/secrets/sqlplot.json', 'r') as fin:
 		app['config'] = orjson.loads(await fin.read())
 	# PostgreSQL Pool:
 	pg_config = app['config']['postgres']
@@ -84,9 +83,7 @@ async def app_factory(argv=[]):
 
 
 def main():
-	ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-	ssl_context.load_cert_chain('/secrets/domain_srv.crt', '/secrets/domain_srv.key')
-	web.run_app(app_factory(), port=8080, ssl_context=ssl_context)
+	web.run_app(app_factory(), port=8080)
 
 
 if __name__ == '__main__':

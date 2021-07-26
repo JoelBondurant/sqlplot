@@ -45,7 +45,8 @@ async def signup(request):
 					records=[[team_xid, user_xid, True]], columns=['team_xid', 'user_xid', 'is_admin'])
 			msg = ''
 			status = 'success'
-		except:
+		except Exception as ex:
+			logging.exception(ex)
 			status = 'fail'
 		resp = aiohttp.web.json_response({'status': status, 'msg': msg})
 		return resp
