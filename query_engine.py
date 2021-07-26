@@ -29,8 +29,8 @@ async def process_event(event):
 		connection_xid = query_info['connection_xid']
 		query_text = query_info['query_text']
 		file_ext = query_text.lower().split('.')[-1]
-		fn_hidden = f'/data/distillery/query/.{xid}.{file_ext}'
-		fn = f'/data/distillery/query/{xid}.{file_ext}'
+		fn_hidden = f'/data/sqlplot/query/.{xid}.{file_ext}'
+		fn = f'/data/sqlplot/query/{xid}.{file_ext}'
 		if connection_xid == 'HTTP':
 			async with aiohttp.ClientSession() as session:
 				async with session.get(query_text) as resp:
@@ -73,7 +73,7 @@ async def process_event(event):
 				status = 'fail'
 				msg = type(ex).__name__ + ': ' + ex.message
 			if len(rs) == 0:
-				fn = f'/data/distillery/query/{user_xid}.csv'
+				fn = f'/data/sqlplot/query/{user_xid}.csv'
 				if os.path.exists(fn):
 					await aiofiles.os.remove(fn)
 				async with aiofiles.open(fn, mode='w', newline='') as fout:
@@ -82,8 +82,8 @@ async def process_event(event):
 				columns = [*rs[0].keys()]
 				data = [[*x.values()] for x in rs]
 				logging.debug(f'Query data: {columns}\n{data}')
-				fn_hidden = f'/data/distillery/query/.{user_xid}.csv'
-				fn = f'/data/distillery/query/{user_xid}.csv'
+				fn_hidden = f'/data/sqlplot/query/.{user_xid}.csv'
+				fn = f'/data/sqlplot/query/{user_xid}.csv'
 				async with aiofiles.open(fn_hidden, mode='w', newline='') as fout:
 					writer = aiocsv.AsyncWriter(fout, dialect='unix')
 					await writer.writerow(columns)
@@ -106,7 +106,7 @@ async def main():
 	logging.basicConfig(level=logging.DEBUG)
 	logging.info('Starting query engine')
 	logging.info(f'Python version: {sys.version}')
-	async with aiofiles.open('/secrets/distillery.json', 'r') as fin:
+	async with aiofiles.open('/secrets/sqlplot.json', 'r') as fin:
 		config = orjson.loads(await fin.read())
 	app['config'] = config
 	pg_config = config['postgres']
