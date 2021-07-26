@@ -83,7 +83,7 @@
 
 <script>
 function openResultsSocket() {
-	var resultsSocket = new WebSocket('wss://127.0.0.1:8080/results_socket');
+	var resultsSocket = new WebSocket('wss://sqlplot.com/results_socket');
 	resultsSocket.onmessage = async (msg) => {
 		var result = JSON.parse(msg.data);
 		console.log(result);
@@ -102,7 +102,7 @@ var resultsSocket = openResultsSocket();
 </script>
 <script>
 function openQuerySocket() {
-	var querySocket = new WebSocket('wss://127.0.0.1:8080/query_socket');
+	var querySocket = new WebSocket('wss://sqlplot.com/query_socket');
 	querySocket.onmessage = (msg) => {
 		console.log(msg);
 	}
