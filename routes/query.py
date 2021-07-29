@@ -139,7 +139,7 @@ async def query(request):
 			''', user_xid, timeout=4)
 		teams = [dict(x) for x in teams]
 		query_url_key = f'{user_xid}.query_url'
-		query_url = await redis.get(query_url_key)
+		query_url = (await redis.get(query_url_key)).decode()
 		if query_url is None:
 			aws = aioboto3.Session()
 			async with aws.client('s3') as s3:

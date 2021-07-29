@@ -7,6 +7,7 @@ import os
 import io
 import sys
 
+import aioboto3
 import aiofiles
 import aiohttp
 import aioredis

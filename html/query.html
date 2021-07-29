@@ -388,7 +388,8 @@ function sendQuery() {
 	<div id="results_panel">
 		<script>
 		async function renderResults() {
-			var csvText = await d3.text('{{ query_url }}');
+			var queryUrl = '{{ query_url }}';
+			var csvText = await d3.text(queryUrl);
 			var csv = d3.csvParseRows(csvText);
 			// Stats Panel:
 			var elapsed = (new Date() - queryStart);
