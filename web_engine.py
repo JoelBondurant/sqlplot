@@ -56,9 +56,7 @@ async def app_factory(argv=[]):
 		web.static('/css/', './static/css/', show_index=False, append_version=True),
 		web.static('/js/', './static/js/', show_index=False, append_version=True),
 		web.static('/font/', './static/font/', show_index=False, append_version=True),
-		web.static('/data', '/data/sqlplot/query/', show_index=False, append_version=True),
-		web.static('/img', '/data/sqlplot/img/', show_index=False, append_version=True),
-		web.static('/simg', './static/img/', show_index=False, append_version=True),
+		web.static('/img', './static/img/', show_index=False, append_version=True),
 		web.get('/query_socket', query_socket.query_socket),
 		web.get('/results_socket', results_socket.results_socket),
 	])
