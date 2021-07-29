@@ -41,6 +41,9 @@ async def query(request):
 				event = {
 					'event_type': 'new',
 					'xid': xid,
+					'user_xid': user_xid,
+					'connection_xid': event['connection_xid'],
+					'query_text': event['query_text'],
 				}
 				redis.publish_json('query', event)
 			elif event['event_type'] == 'update':
@@ -68,6 +71,9 @@ async def query(request):
 				event = {
 					'event_type': 'update',
 					'xid': xid,
+					'user_xid': user_xid,
+					'connection_xid': event['connection_xid'],
+					'query_text': event['query_text'],
 				}
 				redis.publish_json('query', event)
 			elif event['event_type'] == 'delete':
