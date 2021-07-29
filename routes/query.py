@@ -1,6 +1,7 @@
 import logging
 import secrets
 
+import aioboto3
 import aiohttp
 import aiohttp_jinja2
 
@@ -22,9 +23,9 @@ CONNECTION_XIDS = [
 async def query(request):
 	user_session, user_xid = login.authenticate(request)
 	columns = ['xid'] + FORM_FIELDS.copy()
+	redis = request.app['redis']
 	async with (request.app['pg_pool']).acquire(timeout=2) as pgconn:
 		if request.method == 'POST':
-			redis = request.app['redis']
 			event = await request.json()
 			logging.debug(f'Query event posted: {event}')
 			if event['event_type'] == 'new':
@@ -137,11 +138,21 @@ async def query(request):
 			order by 2, 1
 			''', user_xid, timeout=4)
 		teams = [dict(x) for x in teams]
+		query_url_key = f'{user_xid}.query_url'
+		query_url = await redis.get(query_url_key)
+		if query_url is None:
+			aws = aioboto3.Session()
+			async with aws.client('s3') as s3:
+				query_url = await s3.generate_presigned_url('get_object',
+					Params={'Bucket':'sqlplot', 'Key':f'query/{user_xid}.csv'},
+					ExpiresIn=3600*24)
+			await redis.set(query_url_key, query_url, expire=3600*24)
 		context = {
 			'queries': queries,
 			'connections': connections,
 			'teams': teams,
 			'user_xid': user_xid,
+			'query_url': query_url,
 		}
 		resp = aiohttp_jinja2.render_template('query.html', request, context)
 		return resp

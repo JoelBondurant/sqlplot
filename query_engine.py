@@ -4,11 +4,10 @@ import asyncio
 import csv
 import logging
 import os
+import io
 import sys
 
-import aiocsv
 import aiofiles
-import aiofiles.os
 import aiohttp
 import aioredis
 import asyncpg
@@ -26,21 +25,6 @@ async def process_event(event):
 		async with (app['pg_pool']).acquire(timeout=2) as pgconn:
 			query_info = dict(await pgconn.fetchrow(query_info_sql, xid))
 		logging.debug(f'query_info: {query_info}')
-		connection_xid = query_info['connection_xid']
-		query_text = query_info['query_text']
-		file_ext = query_text.lower().split('.')[-1]
-		fn_hidden = f'/data/sqlplot/query/.{xid}.{file_ext}'
-		fn = f'/data/sqlplot/query/{xid}.{file_ext}'
-		if connection_xid == 'HTTP':
-			async with aiohttp.ClientSession() as session:
-				async with session.get(query_text) as resp:
-					data = await resp.content.read()
-			async with aiofiles.open(fn_hidden, 'w') as fh:
-				await fh.write(data.decode())
-			if os.path.exists(fn):
-				await aiofiles.os.remove(fn)
-			await aiofiles.os.rename(fn_hidden, fn)
-			logging.info(f'Ready: {fn}')
 	if event['event_type'] == 'user':
 		logging.info(event)
 		user_xid = event['user_xid']
@@ -72,25 +56,20 @@ async def process_event(event):
 				rs = []
 				status = 'fail'
 				msg = type(ex).__name__ + ': ' + ex.message
+			aws = aioboto3.Session()
+			fn = f'query/{user_xid}.csv'
 			if len(rs) == 0:
-				fn = f'/data/sqlplot/query/{user_xid}.csv'
-				if os.path.exists(fn):
-					await aiofiles.os.remove(fn)
-				async with aiofiles.open(fn, mode='w', newline='') as fout:
-					pass
+				async with aws.client('s3') as s3:
+					await s3.put_object(Body=b'', Bucket='sqlplot', Key=fn)
 			else:
 				columns = [*rs[0].keys()]
 				data = [[*x.values()] for x in rs]
 				logging.debug(f'Query data: {columns}\n{data}')
-				fn_hidden = f'/data/sqlplot/query/.{user_xid}.csv'
-				fn = f'/data/sqlplot/query/{user_xid}.csv'
-				async with aiofiles.open(fn_hidden, mode='w', newline='') as fout:
-					writer = aiocsv.AsyncWriter(fout, dialect='unix')
-					await writer.writerow(columns)
-					await writer.writerows(data)
-				if os.path.exists(fn):
-					await aiofiles.os.remove(fn)
-				await aiofiles.os.rename(fn_hidden, fn)
+				csvram = io.StringIO()
+				csvwriter = csv.writer(csvram, delimiter=',')
+				csvwriter.writerows([columns] + data)
+				async with aws.client('s3') as s3:
+					await s3.put_object(Body=csvram.getvalue().encode(), Bucket='sqlplot', Key=fn)
 				logging.info(f'Ready: {fn}')
 			await app['redis'].publish_json(user_xid, {'status':status, 'msg':msg})
 
