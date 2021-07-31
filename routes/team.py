@@ -9,6 +9,10 @@ import orjson
 from routes import login
 
 
+def self_xid(user_xid):
+	return 'x02' + user_xid[3:]
+
+
 def member_list(list_string, extras=[], exclude=[]):
 	members = (','.join(list_string.split('\n'))).split(',')
 	members = [m.strip() for m in members]
@@ -23,7 +27,7 @@ async def team(request):
 			event = await request.json()
 			logging.debug(f'Team event posted: {event}')
 			if event['event_type'] == 'new':
-				xid = 'x' + secrets.token_hex(16)[1:]
+				xid = 'x02' + secrets.token_hex(15)[1:]
 				event['xid'] = xid
 				record = tuple([xid, event['name']])
 				result = await pgconn.copy_records_to_table('team', records=[record], columns=['xid','name'])
@@ -83,7 +87,7 @@ async def team(request):
 		teams = await pgconn.fetch(f'''
 			select xid, name
 			from team t
-			where not t.xid = left($1,28)||'0000'
+			where not t.xid = 'x02'||right($1,29)
 			order by name, xid
 			''', user_xid, timeout=4)
 		teams = [dict(x) for x in teams]

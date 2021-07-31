@@ -6,6 +6,8 @@ import secrets
 import aiohttp
 import aiohttp_jinja2
 
+from routes import team
+
 
 async def signup(request):
 	if request.method == 'POST':
@@ -33,8 +35,8 @@ async def signup(request):
 			async with (request.app['pg_pool']).acquire(timeout=2) as pgconn:
 				msg = 'user name taken.'
 				assert await pgconn.fetchval('select count(1) from "user" where name = $1', name) == 0
-				user_xid = 'x' + secrets.token_hex(16)[1:]
-				team_xid = user_xid[:-4] + '0000'
+				user_xid = 'x01' + secrets.token_hex(15)[1:]
+				team_xid = team.self_xid(user_xid)
 				salt = secrets.token_hex(16)
 				key = hashlib.pbkdf2_hmac('sha256', password.encode(), salt.encode(), 10**5).hex()[:32]
 				await pgconn.copy_records_to_table('user',

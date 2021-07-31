@@ -8,6 +8,7 @@ import orjson
 
 from routes import login
 from routes import authorization
+from routes import team
 
 
 TYPES = {
@@ -38,13 +39,13 @@ async def connection(request):
 			logging.debug(f'Connection event posted: {event}')
 			if event['event_type'] == 'new':
 				event['configuration'] = FERNET_KEY.encrypt(event['configuration'].encode()).decode()
-				xid = 'x' + secrets.token_hex(16)[1:]
+				xid = 'x10' + secrets.token_hex(15)[1:]
 				event['xid'] = xid
 				record = tuple([xid] + [event[k] for k in FORM_FIELDS])
 				result = await pgconn.copy_records_to_table('connection', records=[record], columns=columns)
 				editors = [('editor', txid, 'connection', xid) for txid in event['editors']]
 				readers = [('reader', txid, 'connection', xid) for txid in event['readers']]
-				auth = editors + readers + [('creator', user_xid[:-4]+'0000', 'connection', xid)]
+				auth = editors + readers + [('creator', team.self_xid(user_xid), 'connection', xid)]
 				await pgconn.copy_records_to_table('authorization', records=auth, columns=authorization.COLUMNS)
 			elif event['event_type'] == 'update':
 				event['configuration'] = FERNET_KEY.encrypt(event['configuration'].encode()).decode()
@@ -98,7 +99,8 @@ async def connection(request):
 				select type, team_xid
 				from "authorization"
 				where object_type = 'connection'
-				and object_xid = $1;
+					and "type" in ('editor','reader')
+					and object_xid = $1;
 			''', xid, timeout=4)
 			editors = [x[1] for x in auth if x[0] == 'editor']
 			readers = [x[1] for x in auth if x[0] == 'reader']
@@ -122,7 +124,7 @@ async def connection(request):
 			join team t
 				on (tm.team_xid = t.xid)
 			where tm.user_xid = $1
-				and not t.xid = left($1,28)||'0000'
+				and not t.xid = 'x02'||right($1,29)
 			order by 2, 1
 			''', user_xid, timeout=4)
 		teams = [dict(x) for x in teams]
