@@ -107,7 +107,7 @@ async def query(request):
 				where object_type = 'query'
 					and "type" in ('editor','reader')
 					and object_xid = $1;
-			''', xid, user_xid, timeout=4)
+			''', xid, timeout=4)
 			editors = [x[1] for x in auth if x[0] == 'editor']
 			readers = [x[1] for x in auth if x[0] == 'reader']
 			query['editors'] = editors
@@ -146,7 +146,7 @@ async def query(request):
 			''', user_xid, timeout=4)
 		teams = [dict(x) for x in teams]
 		query_url_key = f'{user_xid}.query_url'
-		query_url = (await redis.get(query_url_key)).decode()
+		query_url = await redis.get(query_url_key)
 		if query_url is None:
 			aws = aioboto3.Session()
 			async with aws.client('s3') as s3:
@@ -154,6 +154,8 @@ async def query(request):
 					Params={'Bucket':'sqlplot', 'Key':f'query/{user_xid}.csv'},
 					ExpiresIn=3600*24)
 			await redis.set(query_url_key, query_url, expire=3600*24)
+		else:
+			query_url = query_url.decode()
 		context = {
 			'queries': queries,
 			'connections': connections,

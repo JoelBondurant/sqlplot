@@ -241,10 +241,10 @@
 		async function embedView() {
 			var configuration = window.editor.getValue();
 			if (configuration.length > 0) {
-				var dataUrlMatches = Array.from(configuration.matchAll('/data\\?query_xid=x[a-f0-9]{31}'));
+				var dataUrlMatches = Array.from(configuration.matchAll('/data\\?xid=x[a-f0-9]{31}'));
 				for (dataUrlMatch of dataUrlMatches) {
 					var userUrl = dataUrlMatch[0];
-					var realUrl = (await (await fetch(userUrl)).json())['query_url'];
+					var realUrl = (await (await fetch(userUrl)).json())['url'];
 					configuration = configuration.replace(userUrl, realUrl);
 				}
 				vegaEmbed('#view_panel', JSON.parse(configuration), {actions:false, theme:'dark'});
