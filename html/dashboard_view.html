@@ -15,7 +15,14 @@ async function bindView(vid, xvid, config={}) {
 	var view = await (await fetch('/view?xid='+xvid)).json();
 	var baseConfig = {actions:false, theme:'dark'};
 	var embedConfig = {...baseConfig, ...config};
-	return vegaEmbed('#'+vid, JSON.parse(view['configuration']), embedConfig);
+	var configuration = view['configuration'];
+	var dataUrlMatches = Array.from(configuration.matchAll('/data\\?xid=x[a-f0-9]{31}'));
+	for (dataUrlMatch of dataUrlMatches) {
+		var userUrl = dataUrlMatch[0];
+		var realUrl = (await (await fetch(userUrl)).json())['url'];
+		configuration = configuration.replace(userUrl, realUrl);
+	}
+	return vegaEmbed('#'+vid, JSON.parse(configuration), embedConfig);
 }
 async function dashboardRenderGenerator() {
 	var dashURL = '/dashboard?xid={{xid}}';
