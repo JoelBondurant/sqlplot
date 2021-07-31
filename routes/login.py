@@ -55,7 +55,7 @@ async def login(request):
 				user_session = jwt.encode({'xid': user['xid'], 'exp': exp},
 					request.app['config']['user']['session_key']).decode()
 				resp = aiohttp.web.json_response({'status': 'success'})
-				resp.set_cookie('user_session', user_session, max_age=3600*24, httponly=True, samesite='Strict')
+				resp.set_cookie('user_session', user_session, max_age=3600*16, httponly=True, samesite='Strict')
 				return resp
 		except:
 			pass
