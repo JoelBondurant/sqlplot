@@ -14,6 +14,7 @@ import uvloop
 
 from routes import connection
 from routes import dashboard
+from routes import data
 from routes import home
 from routes import login
 from routes import logout
@@ -51,6 +52,7 @@ async def app_factory(argv=[]):
 		web.post('/view', view.view),
 		web.get('/team', team.team),
 		web.post('/team', team.team),
+		web.get('/data', data.data),
 		web.get('/dashboard', dashboard.dashboard),
 		web.post('/dashboard', dashboard.dashboard),
 		web.static('/css/', './static/css/', show_index=False, append_version=True),

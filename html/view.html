@@ -237,17 +237,25 @@
 		<input type="button" value="xid" onclick="copyXid();">
 	</div>
 
-	<div id="wrapper">
-		<div id="configuration_panel"
-			onclick="
-				var configuration = window.editor.getValue();
-				if (configuration.length > 0) {
-					vegaEmbed('#view_panel', JSON.parse(configuration), {actions:false, theme:'dark'});
-				} else {
-					document.getElementById('view_panel').innerHTML = '';
+	<script>
+		async function embedView() {
+			var configuration = window.editor.getValue();
+			if (configuration.length > 0) {
+				var dataUrlMatches = Array.from(configuration.matchAll('/data\\?query_xid=x[a-f0-9]{31}'));
+				for (dataUrlMatch of dataUrlMatches) {
+					var userUrl = dataUrlMatch[0];
+					var realUrl = (await (await fetch(userUrl)).json())['query_url'];
+					configuration = configuration.replace(userUrl, realUrl);
 				}
-			"
-			autofocus>
+				vegaEmbed('#view_panel', JSON.parse(configuration), {actions:false, theme:'dark'});
+			} else {
+				document.getElementById('view_panel').innerHTML = '';
+			}
+		}
+	<script>
+
+	<div id="wrapper">
+		<div id="configuration_panel" onclick="embedView();" autofocus>
 			<script>
 				var require = {"paths":{"vs":"https://cdn.jsdelivr.net/npm/monaco-editor@0.25.2/min/vs"}};
 			</script>
