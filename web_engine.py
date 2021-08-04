@@ -18,6 +18,7 @@ from routes import data
 from routes import home
 from routes import login
 from routes import logout
+from routes import payment
 from routes import query
 from routes import query_socket
 from routes import results_socket
@@ -53,6 +54,7 @@ async def app_factory(argv=[]):
 		web.get('/team', team.team),
 		web.post('/team', team.team),
 		web.get('/data', data.data),
+		web.get('/payment', payment.payment),
 		web.get('/dashboard', dashboard.dashboard),
 		web.post('/dashboard', dashboard.dashboard),
 		web.static('/css/', './static/css/', show_index=False, append_version=True),
