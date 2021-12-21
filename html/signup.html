@@ -54,7 +54,7 @@ async function deriveKey(akey) {
 	{
 		'name': 'PBKDF2',
 		'salt': Uint8Array.from([79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94]),
-		'iterations': 79797979,
+		'iterations': 7979797,
 		'hash': 'SHA-512',
 	},
 	akey,
@@ -83,11 +83,12 @@ async function signUp() {
 		document.getElementById('password').value = '';
 		return;
 	}
+	tooltip.innerHTML = 'generating key derivation...';
+	tooltip.style.visibility = 'visible';
+	tooltip.style.backgroundColor = '#aaf';
 	var derivedKey = await deriveKey(password);
 	var derivedPassword = (await crypto.subtle.exportKey('jwk', derivedKey))['k'];
 	tooltip.innerHTML = 'generating proof of work...';
-	tooltip.style.visibility = 'visible';
-	tooltip.style.backgroundColor = '#aaf';
 	var pow = await proofOfWork(name, derivedPassword);
 	var signUpEvent = {'name': name, 'password': derivedPassword, 'pow': pow};
 	var resp = await (await fetch('/signup', {'method': 'POST', 'body': JSON.stringify(signUpEvent)})).json();

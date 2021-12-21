@@ -33,7 +33,7 @@ async function deriveKey(akey) {
 	{
 		'name': 'PBKDF2',
 		'salt': Uint8Array.from([79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94]),
-		'iterations': 79797979,
+		'iterations': 7979797,
 		'hash': 'SHA-512',
 	},
 	akey,
@@ -61,6 +61,9 @@ async function logIn() {
 		tooltip.style.visibility = 'visible';
 		return;
 	}
+	tooltip.innerHTML = 'generating key derivation...';
+	tooltip.style.visibility = 'visible';
+	tooltip.style.backgroundColor = '#afa';
 	var derivedKey = await deriveKey(password);
 	var derivedPassword = (await crypto.subtle.exportKey('jwk', derivedKey))['k'];
 	var timebomb = '{{ timebomb }}';
@@ -71,13 +74,10 @@ async function logIn() {
 		'headers': {'Content-Type': 'application/json'}})).json();
 	if (resp['status'] == 'success') {
 		tooltip.innerHTML = 'login success.';
-		tooltip.style.visibility = 'visible';
-		tooltip.style.backgroundColor = '#afa';
 		setTimeout(() => window.location.assign('/'), 600);
 	}
 	else if (resp['status'] == 'fail') {
 		tooltip.innerHTML = 'login fail.';
-		tooltip.style.visibility = 'visible';
 		document.getElementById('name').value = '';
 		document.getElementById('password').value = '';
 	}
