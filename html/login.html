@@ -63,7 +63,7 @@ async function logIn() {
 	}
 	tooltip.innerHTML = 'generating key derivation...';
 	tooltip.style.visibility = 'visible';
-	tooltip.style.backgroundColor = '#afa';
+	tooltip.style.backgroundColor = '#aaf';
 	var derivedKey = await deriveKey(password);
 	var derivedPassword = (await crypto.subtle.exportKey('jwk', derivedKey))['k'];
 	var timebomb = '{{ timebomb }}';
@@ -73,10 +73,12 @@ async function logIn() {
 		'body': JSON.stringify(logInEvent),
 		'headers': {'Content-Type': 'application/json'}})).json();
 	if (resp['status'] == 'success') {
+		tooltip.style.backgroundColor = '#afa';
 		tooltip.innerHTML = 'login success.';
 		setTimeout(() => window.location.assign('/'), 600);
 	}
 	else if (resp['status'] == 'fail') {
+		tooltip.style.backgroundColor = '#faa';
 		tooltip.innerHTML = 'login fail.';
 		document.getElementById('name').value = '';
 		document.getElementById('password').value = '';
