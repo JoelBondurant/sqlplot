@@ -4,7 +4,6 @@ import logging
 
 import aioboto3
 import aiohttp
-import jwt
 import orjson
 
 from routes import login
