@@ -75,6 +75,8 @@ input[type=text], input[type=password] {
 	font-size: 14px;
 	padding: 4px 12px;
 	height: 28px;
+	min-width: 8vw;
+	max-width: 32vw;
 }
 input[type=checkbox] {
 	appearance: none;
