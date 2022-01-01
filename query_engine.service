@@ -1,0 +1,16 @@
+[Unit]
+Description=SqlPlot Query Engine
+
+[Service]
+User=ubuntu
+Group=ubuntu
+Type=simple
+WorkingDirectory=/home/ubuntu/sqlplot
+ExecStart=/home/ubuntu/sqlplot/query_engine.py
+Restart=always
+RestartSec=8
+TimeoutSec=8
+
+
+[Install]
+WantedBy=multi-user.target
