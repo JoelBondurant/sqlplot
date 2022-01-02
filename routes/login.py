@@ -2,6 +2,7 @@ import asyncio
 import datetime
 import hashlib
 import logging
+import secrets
 
 import aiohttp
 import aiohttp_jinja2
@@ -50,7 +51,7 @@ async def login(request):
 				if user is None:
 					raise Exception('fail')
 			key = hashlib.pbkdf2_hmac('sha256', password.encode(), user['salt'].encode(), 10**5).hex()[:32]
-			if key == user['key']:
+			if secrets.compare_digest(key, user['key']):
 				exp = datetime.datetime.utcnow() + datetime.timedelta(days=7)
 				user_session = jwt.encode({'xid': user['xid'], 'exp': exp},
 					request.app['config']['user']['session_key'], algorithm='HS256').decode()
