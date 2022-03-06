@@ -6,4 +6,3 @@ sudo -u sqlplot psql -f pgsql/schema/connection.sql
 sudo -u sqlplot psql -f pgsql/schema/team_membership.sql
 sudo -u sqlplot psql -f pgsql/schema/team.sql
 sudo -u sqlplot psql -f pgsql/schema/user.sql
-

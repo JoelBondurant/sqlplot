@@ -1,6 +1,3 @@
-import logging
-
-import aiohttp
 import aiohttp_jinja2
 
 from routes import login

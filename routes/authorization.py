@@ -5,4 +5,3 @@ COLUMNS = [
 	'object_type',
 	'object_xid',
 ]
-

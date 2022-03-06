@@ -1,7 +1,6 @@
 import asyncio
 import datetime
 import hashlib
-import logging
 import secrets
 
 import aiohttp
@@ -71,4 +70,3 @@ async def login(request):
 	resp = aiohttp_jinja2.render_template('login.html', request, context)
 	resp.del_cookie('user_session')
 	return resp
-

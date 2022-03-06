@@ -1,5 +1,4 @@
 import asyncio
-import html
 import logging
 
 import aioboto3

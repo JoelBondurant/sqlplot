@@ -1,5 +1,3 @@
-import logging
-
 import aioboto3
 import aiohttp.web
 

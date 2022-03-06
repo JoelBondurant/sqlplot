@@ -9,7 +9,6 @@ import sys
 
 import aioboto3
 import aiofiles
-import aiohttp
 import aioredis
 import asyncpg
 from cryptography.fernet import Fernet

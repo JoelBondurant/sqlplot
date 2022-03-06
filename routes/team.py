@@ -4,7 +4,6 @@ import re
 
 import aiohttp
 import aiohttp_jinja2
-import orjson
 
 from routes import login
 

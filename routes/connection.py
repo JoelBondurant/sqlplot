@@ -4,7 +4,6 @@ import secrets
 import aiohttp
 import aiohttp_jinja2
 from cryptography.fernet import Fernet
-import orjson
 
 from routes import login
 from routes import authorization

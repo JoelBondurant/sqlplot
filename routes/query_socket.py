@@ -1,8 +1,6 @@
-import asyncio
 import logging
 
 import aiohttp
-import jwt
 import orjson
 
 from routes import login
